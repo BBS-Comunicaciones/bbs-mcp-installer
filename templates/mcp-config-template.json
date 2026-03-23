@@ -1,0 +1,248 @@
+{
+  "_comment": "Template maestro de configuración MCP para BBS Comunicaciones",
+  "_version": "1.0.0",
+  "_generated": "FECHA_GENERACION",
+  "_client": "NOMBRE_CLIENTE",
+  "_slug": "CLIENT_SLUG",
+
+  "mcpServers": {
+
+    "whm-CLIENT_SLUG": {
+      "_service": "WHM/cPanel",
+      "_description": "Gestión de servidor web, cuentas de hosting, DNS y SSL",
+      "_privilege": "PRIVILEGIO_WHM",
+      "command": "npx",
+      "args": ["-y", "@bbs/whm-mcp"],
+      "env": {
+        "WHM_URL": "WHM_URL_AQUI",
+        "WHM_USER": "WHM_USER_AQUI",
+        "WHM_TOKEN": "WHM_TOKEN_AQUI",
+        "WHM_PRIVILEGE": "PRIVILEGIO_WHM"
+      }
+    },
+
+    "whmcs-CLIENT_SLUG": {
+      "_service": "WHMCS",
+      "_description": "Facturación, órdenes, dominios y gestión de servicios",
+      "_privilege": "PRIVILEGIO_WHMCS",
+      "command": "npx",
+      "args": ["-y", "@bbs/whmcs-mcp"],
+      "env": {
+        "WHMCS_URL": "WHMCS_URL_AQUI",
+        "WHMCS_API_ID": "WHMCS_API_ID_AQUI",
+        "WHMCS_API_SECRET": "WHMCS_API_SECRET_AQUI",
+        "WHMCS_PRIVILEGE": "PRIVILEGIO_WHMCS"
+      }
+    },
+
+    "ssh-CLIENT_SLUG": {
+      "_service": "SSH Server",
+      "_description": "Acceso directo al servidor vía SSH",
+      "_privilege": "PRIVILEGIO_SSH",
+      "command": "npx",
+      "args": ["-y", "@bbs/ssh-mcp"],
+      "env": {
+        "SSH_HOST": "SSH_HOST_AQUI",
+        "SSH_PORT": "SSH_PORT_AQUI",
+        "SSH_USER": "SSH_USER_AQUI",
+        "SSH_KEY_PATH": "SSH_KEY_PATH_AQUI",
+        "SSH_WORK_DIR": "SSH_WORK_DIR_AQUI"
+      }
+    },
+
+    "perfex-CLIENT_SLUG": {
+      "_service": "Perfex CRM",
+      "_description": "CRM, proyectos, facturas y tickets de soporte",
+      "_privilege": "PRIVILEGIO_PERFEX",
+      "command": "npx",
+      "args": ["-y", "@bbs/perfex-mcp"],
+      "env": {
+        "PERFEX_URL": "PERFEX_URL_AQUI",
+        "PERFEX_TOKEN": "PERFEX_TOKEN_AQUI",
+        "PERFEX_PRIVILEGE": "PRIVILEGIO_PERFEX"
+      }
+    },
+
+    "cloudflare-CLIENT_SLUG": {
+      "_service": "Cloudflare",
+      "_description": "DNS, CDN, firewall, workers y zonas",
+      "_privilege": "PRIVILEGIO_CLOUDFLARE",
+      "command": "npx",
+      "args": ["-y", "@bbs/cloudflare-mcp"],
+      "env": {
+        "CLOUDFLARE_API_TOKEN": "CF_API_TOKEN_AQUI",
+        "CLOUDFLARE_ACCOUNT_ID": "CF_ACCOUNT_ID_AQUI",
+        "CLOUDFLARE_ZONES": "CF_ZONES_AQUI"
+      }
+    },
+
+    "meta-CLIENT_SLUG": {
+      "_service": "Meta (Facebook/Instagram)",
+      "_description": "Facebook Pages, Instagram Business, Meta Ads",
+      "_privilege": "PRIVILEGIO_META",
+      "command": "npx",
+      "args": ["-y", "@bbs/meta-mcp"],
+      "env": {
+        "META_APP_ID": "META_APP_ID_AQUI",
+        "META_APP_SECRET": "META_APP_SECRET_AQUI",
+        "META_ACCESS_TOKEN": "META_ACCESS_TOKEN_AQUI",
+        "META_PAGE_ID": "META_PAGE_ID_AQUI",
+        "META_IG_ACCOUNT_ID": "META_IG_ACCOUNT_ID_AQUI",
+        "META_AD_ACCOUNT_ID": "META_AD_ACCOUNT_ID_AQUI"
+      }
+    },
+
+    "tiktok-CLIENT_SLUG": {
+      "_service": "TikTok",
+      "_description": "TikTok Business, videos, comentarios y anuncios",
+      "_privilege": "PRIVILEGIO_TIKTOK",
+      "command": "npx",
+      "args": ["-y", "@bbs/tiktok-mcp"],
+      "env": {
+        "TIKTOK_CLIENT_KEY": "TIKTOK_CLIENT_KEY_AQUI",
+        "TIKTOK_CLIENT_SECRET": "TIKTOK_CLIENT_SECRET_AQUI",
+        "TIKTOK_ACCESS_TOKEN": "TIKTOK_ACCESS_TOKEN_AQUI",
+        "TIKTOK_OPEN_ID": "TIKTOK_OPEN_ID_AQUI"
+      }
+    },
+
+    "google-cloud-CLIENT_SLUG": {
+      "_service": "Google Cloud",
+      "_description": "Maps, Vision AI, Translate, YouTube, TTS, BigQuery",
+      "_privilege": "PRIVILEGIO_GCLOUD",
+      "command": "npx",
+      "args": ["-y", "@bbs/google-cloud-mcp"],
+      "env": {
+        "GOOGLE_API_KEY": "GOOGLE_API_KEY_AQUI",
+        "GOOGLE_PROJECT_ID": "GOOGLE_PROJECT_ID_AQUI",
+        "GOOGLE_SERVICE_ACCOUNT_JSON": "GOOGLE_SA_JSON_PATH_AQUI"
+      }
+    },
+
+    "gmail-CLIENT_SLUG": {
+      "_service": "Gmail",
+      "_description": "Correo electrónico — leer, enviar, buscar, organizar",
+      "_privilege": "PRIVILEGIO_GMAIL",
+      "command": "npx",
+      "args": ["-y", "@bbs/gmail-mcp"],
+      "env": {
+        "GMAIL_CLIENT_ID": "GMAIL_CLIENT_ID_AQUI",
+        "GMAIL_CLIENT_SECRET": "GMAIL_CLIENT_SECRET_AQUI",
+        "GMAIL_REFRESH_TOKEN": "GMAIL_REFRESH_TOKEN_AQUI",
+        "GMAIL_EMAIL": "GMAIL_EMAIL_AQUI"
+      }
+    },
+
+    "gdrive-CLIENT_SLUG": {
+      "_service": "Google Drive",
+      "_description": "Documentos, hojas de cálculo, archivos en Drive",
+      "_privilege": "PRIVILEGIO_GDRIVE",
+      "command": "npx",
+      "args": ["-y", "@bbs/gdrive-mcp"],
+      "env": {
+        "GDRIVE_CLIENT_ID": "GDRIVE_CLIENT_ID_AQUI",
+        "GDRIVE_CLIENT_SECRET": "GDRIVE_CLIENT_SECRET_AQUI",
+        "GDRIVE_REFRESH_TOKEN": "GDRIVE_REFRESH_TOKEN_AQUI",
+        "GDRIVE_ROOT_FOLDER": "GDRIVE_ROOT_FOLDER_AQUI"
+      }
+    },
+
+    "gcal-CLIENT_SLUG": {
+      "_service": "Google Calendar",
+      "_description": "Calendario — eventos, reuniones, disponibilidad",
+      "_privilege": "PRIVILEGIO_GCAL",
+      "command": "npx",
+      "args": ["-y", "@bbs/gcal-mcp"],
+      "env": {
+        "GCAL_CLIENT_ID": "GCAL_CLIENT_ID_AQUI",
+        "GCAL_CLIENT_SECRET": "GCAL_CLIENT_SECRET_AQUI",
+        "GCAL_REFRESH_TOKEN": "GCAL_REFRESH_TOKEN_AQUI",
+        "GCAL_CALENDAR_ID": "primary"
+      }
+    },
+
+    "canva-CLIENT_SLUG": {
+      "_service": "Canva",
+      "_description": "Diseño gráfico — crear, editar y exportar diseños",
+      "_privilege": "PRIVILEGIO_CANVA",
+      "command": "npx",
+      "args": ["-y", "@bbs/canva-mcp"],
+      "env": {
+        "CANVA_CLIENT_ID": "CANVA_CLIENT_ID_AQUI",
+        "CANVA_CLIENT_SECRET": "CANVA_CLIENT_SECRET_AQUI",
+        "CANVA_ACCESS_TOKEN": "CANVA_ACCESS_TOKEN_AQUI"
+      }
+    },
+
+    "elevenlabs-CLIENT_SLUG": {
+      "_service": "ElevenLabs",
+      "_description": "Text-to-Speech con voces de IA",
+      "_privilege": "PRIVILEGIO_ELEVENLABS",
+      "command": "npx",
+      "args": ["-y", "@bbs/elevenlabs-mcp"],
+      "env": {
+        "ELEVENLABS_API_KEY": "ELEVENLABS_API_KEY_AQUI",
+        "ELEVENLABS_DEFAULT_VOICE": "ELEVENLABS_VOICE_AQUI"
+      }
+    },
+
+    "flux-CLIENT_SLUG": {
+      "_service": "Flux AI",
+      "_description": "Generación de imágenes con IA (Flux)",
+      "_privilege": "PRIVILEGIO_FLUX",
+      "command": "npx",
+      "args": ["-y", "@bbs/flux-mcp"],
+      "env": {
+        "FLUX_API_KEY": "FLUX_API_KEY_AQUI"
+      }
+    },
+
+    "freepik-CLIENT_SLUG": {
+      "_service": "Freepik",
+      "_description": "Banco de imágenes, vectores e íconos",
+      "_privilege": "PRIVILEGIO_FREEPIK",
+      "command": "npx",
+      "args": ["-y", "@bbs/freepik-mcp"],
+      "env": {
+        "FREEPIK_API_KEY": "FREEPIK_API_KEY_AQUI"
+      }
+    },
+
+    "hostinger-CLIENT_SLUG": {
+      "_service": "Hostinger",
+      "_description": "Dominios, hosting, VPS y DNS en Hostinger",
+      "_privilege": "PRIVILEGIO_HOSTINGER",
+      "command": "npx",
+      "args": ["-y", "@bbs/hostinger-mcp"],
+      "env": {
+        "HOSTINGER_API_TOKEN": "HOSTINGER_API_TOKEN_AQUI"
+      }
+    },
+
+    "cf-dev-CLIENT_SLUG": {
+      "_service": "Cloudflare Developer Platform",
+      "_description": "Workers, R2 Storage, D1 Database, KV Store",
+      "_privilege": "PRIVILEGIO_CF_DEV",
+      "command": "npx",
+      "args": ["-y", "@cloudflare/mcp-server-cloudflare"],
+      "env": {
+        "CLOUDFLARE_API_TOKEN": "CF_DEV_TOKEN_AQUI",
+        "CLOUDFLARE_ACCOUNT_ID": "CF_ACCOUNT_ID_AQUI"
+      }
+    },
+
+    "qc-CLIENT_SLUG": {
+      "_service": "Quick Cache (QC)",
+      "_description": "Optimización de caché WordPress en servidor BBS",
+      "_privilege": "PRIVILEGIO_QC",
+      "command": "npx",
+      "args": ["-y", "@bbs/qc-mcp"],
+      "env": {
+        "QC_SITE_URL": "QC_SITE_URL_AQUI",
+        "QC_WHM_USER": "QC_WHM_USER_AQUI",
+        "WHM_TOKEN": "WHM_TOKEN_AQUI"
+      }
+    }
+
+  }
+}

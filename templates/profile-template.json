@@ -1,0 +1,51 @@
+{
+  "client": {
+    "name": "CLIENT_NAME",
+    "slug": "CLIENT_SLUG",
+    "created_at": "FECHA_CREACION",
+    "updated_at": "FECHA_CREACION",
+    "contact": {
+      "name": "",
+      "email": "",
+      "phone": ""
+    },
+    "notes": ""
+  },
+  "services": [],
+  "privileges": {
+    "whm": "none",
+    "whmcs": "none",
+    "ssh": "none",
+    "perfex": "none",
+    "cloudflare": "none",
+    "meta": "none",
+    "tiktok": "none",
+    "google_cloud": "none",
+    "gmail": "none",
+    "gdrive": "none",
+    "gcal": "none",
+    "canva": "none",
+    "elevenlabs": "none",
+    "flux": "none",
+    "freepik": "none",
+    "hostinger": "none",
+    "cf_dev": "none",
+    "qc": "none"
+  },
+  "servers": {
+    "whm_url": "",
+    "whmcs_url": "",
+    "perfex_url": "",
+    "ssh_host": "",
+    "cloudflare_zones": [],
+    "meta_page_id": "",
+    "meta_ig_account": ""
+  },
+  "audit_log": [
+    {
+      "date": "FECHA_CREACION",
+      "action": "created",
+      "note": "Configuración inicial"
+    }
+  ]
+}

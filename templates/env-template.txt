@@ -1,0 +1,134 @@
+# ============================================================
+# BBS COMUNICACIONES — CREDENCIALES MCP
+# Cliente: CLIENT_NAME
+# Slug:    CLIENT_SLUG
+# Creado:  FECHA_CREACION
+# ============================================================
+# ⚠️  ARCHIVO PRIVADO — NO COMPARTIR — NO SUBIR A GIT
+# ⚠️  Agregar al .gitignore: clients/*/.env
+# ============================================================
+
+# ─────────────────────────────────────────
+# WHM / cPanel
+# ─────────────────────────────────────────
+WHM_URL=https://SERVIDOR:2087
+WHM_USER=root
+WHM_TOKEN=CONFIGURAR_AQUI
+# Privilegio: admin | reseller | soporte
+WHM_PRIVILEGE=admin
+
+# ─────────────────────────────────────────
+# WHMCS — Facturación
+# ─────────────────────────────────────────
+WHMCS_URL=https://billing.DOMINIO.com
+WHMCS_API_ID=CONFIGURAR_AQUI
+WHMCS_API_SECRET=CONFIGURAR_AQUI
+# Privilegio: admin | soporte | lectura
+WHMCS_PRIVILEGE=soporte
+
+# ─────────────────────────────────────────
+# SSH — Acceso al servidor
+# ─────────────────────────────────────────
+SSH_HOST=CONFIGURAR_AQUI
+SSH_PORT=22
+SSH_USER=CONFIGURAR_AQUI
+SSH_KEY_PATH=~/.ssh/id_rsa
+SSH_WORK_DIR=/home/USUARIO/public_html
+
+# ─────────────────────────────────────────
+# Perfex CRM
+# ─────────────────────────────────────────
+PERFEX_URL=https://crm.bbscomunicaciones.com
+PERFEX_TOKEN=CONFIGURAR_AQUI
+
+# ─────────────────────────────────────────
+# Cloudflare — DNS & CDN
+# ─────────────────────────────────────────
+CLOUDFLARE_API_TOKEN=CONFIGURAR_AQUI
+CLOUDFLARE_ACCOUNT_ID=CONFIGURAR_AQUI
+# Zonas separadas por coma
+CLOUDFLARE_ZONES=dominio.com,otrositio.mx
+
+# ─────────────────────────────────────────
+# Meta (Facebook / Instagram)
+# ─────────────────────────────────────────
+META_APP_ID=CONFIGURAR_AQUI
+META_APP_SECRET=CONFIGURAR_AQUI
+META_ACCESS_TOKEN=CONFIGURAR_AQUI
+META_PAGE_ID=CONFIGURAR_AQUI
+META_IG_ACCOUNT_ID=CONFIGURAR_AQUI
+META_AD_ACCOUNT_ID=act_CONFIGURAR_AQUI
+
+# ─────────────────────────────────────────
+# TikTok Business
+# ─────────────────────────────────────────
+TIKTOK_CLIENT_KEY=CONFIGURAR_AQUI
+TIKTOK_CLIENT_SECRET=CONFIGURAR_AQUI
+TIKTOK_ACCESS_TOKEN=CONFIGURAR_AQUI
+TIKTOK_OPEN_ID=CONFIGURAR_AQUI
+
+# ─────────────────────────────────────────
+# Google Cloud Platform
+# ─────────────────────────────────────────
+GOOGLE_API_KEY=CONFIGURAR_AQUI
+GOOGLE_PROJECT_ID=CONFIGURAR_AQUI
+GOOGLE_SERVICE_ACCOUNT_JSON=/ruta/a/service-account.json
+
+# ─────────────────────────────────────────
+# Gmail
+# ─────────────────────────────────────────
+GMAIL_CLIENT_ID=CONFIGURAR_AQUI.apps.googleusercontent.com
+GMAIL_CLIENT_SECRET=CONFIGURAR_AQUI
+GMAIL_REFRESH_TOKEN=CONFIGURAR_AQUI
+GMAIL_EMAIL=correo@dominio.com
+
+# ─────────────────────────────────────────
+# Google Drive
+# ─────────────────────────────────────────
+GDRIVE_CLIENT_ID=CONFIGURAR_AQUI.apps.googleusercontent.com
+GDRIVE_CLIENT_SECRET=CONFIGURAR_AQUI
+GDRIVE_REFRESH_TOKEN=CONFIGURAR_AQUI
+GDRIVE_ROOT_FOLDER=
+
+# ─────────────────────────────────────────
+# Google Calendar
+# ─────────────────────────────────────────
+GCAL_CLIENT_ID=CONFIGURAR_AQUI.apps.googleusercontent.com
+GCAL_CLIENT_SECRET=CONFIGURAR_AQUI
+GCAL_REFRESH_TOKEN=CONFIGURAR_AQUI
+GCAL_CALENDAR_ID=primary
+
+# ─────────────────────────────────────────
+# Canva
+# ─────────────────────────────────────────
+CANVA_CLIENT_ID=CONFIGURAR_AQUI
+CANVA_CLIENT_SECRET=CONFIGURAR_AQUI
+CANVA_ACCESS_TOKEN=CONFIGURAR_AQUI
+
+# ─────────────────────────────────────────
+# ElevenLabs — Text-to-Speech
+# ─────────────────────────────────────────
+ELEVENLABS_API_KEY=CONFIGURAR_AQUI
+ELEVENLABS_DEFAULT_VOICE=Rachel
+
+# ─────────────────────────────────────────
+# Flux AI — Generación de imágenes
+# ─────────────────────────────────────────
+FLUX_API_KEY=CONFIGURAR_AQUI
+
+# ─────────────────────────────────────────
+# Freepik
+# ─────────────────────────────────────────
+FREEPIK_API_KEY=CONFIGURAR_AQUI
+
+# ─────────────────────────────────────────
+# Hostinger
+# ─────────────────────────────────────────
+HOSTINGER_API_TOKEN=CONFIGURAR_AQUI
+
+# ─────────────────────────────────────────
+# Cloudflare Developer Platform (Workers/R2/D1/KV)
+# ─────────────────────────────────────────
+# (Usa las mismas credenciales de Cloudflare arriba si aplica)
+CF_DEV_TOKEN=CONFIGURAR_AQUI
+CF_ACCOUNT_ID=CONFIGURAR_AQUI
