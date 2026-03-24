@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BBS MCP Installer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#eff6ff,#eef2ff);min-height:100vh}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:#f1f5f9}
+    ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+    input,select,textarea{font-family:inherit}
+    code{font-family:'SF Mono',Monaco,monospace}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const SERVICES = [
+  {id:"whm",       label:"WHM / cPanel",   icon:"🖥️", cat:"Hosting",      desc:"Servidor, cuentas, DNS, SSL"},
+  {id:"whmcs",     label:"WHMCS",           icon:"💳", cat:"Hosting",      desc:"Facturación, dominios, órdenes"},
+  {id:"ssh",       label:"SSH Server",      icon:"🔒", cat:"Hosting",      desc:"Acceso directo al servidor"},
+  {id:"perfex",    label:"Perfex CRM",      icon:"📊", cat:"CRM",          desc:"Clientes, proyectos, facturas"},
+  {id:"cloudflare",label:"Cloudflare",      icon:"☁️", cat:"DNS",          desc:"DNS, CDN, firewall, workers"},
+  {id:"qc",        label:"Quick Cache",     icon:"⚡", cat:"DNS",          desc:"Caché WordPress"},
+  {id:"meta",      label:"Meta / Facebook", icon:"🔵", cat:"Marketing",    desc:"Facebook, Instagram, Ads"},
+  {id:"tiktok",    label:"TikTok",          icon:"🎵", cat:"Marketing",    desc:"Videos, anuncios, estadísticas"},
+  {id:"google",    label:"Google Cloud",    icon:"🌐", cat:"Marketing",    desc:"Maps, Vision, YouTube, Translate"},
+  {id:"gmail",     label:"Gmail",           icon:"📧", cat:"Productividad",desc:"Correo electrónico"},
+  {id:"gdrive",    label:"Google Drive",    icon:"📁", cat:"Productividad",desc:"Documentos y archivos"},
+  {id:"gcal",      label:"Google Calendar", icon:"📅", cat:"Productividad",desc:"Calendario y reuniones"},
+  {id:"canva",     label:"Canva",           icon:"🎨", cat:"Creatividad",  desc:"Diseño gráfico"},
+  {id:"elevenlabs",label:"ElevenLabs",      icon:"🎙️",cat:"Creatividad",  desc:"Text-to-Speech IA"},
+  {id:"flux",      label:"Flux AI",         icon:"🖼️",cat:"Creatividad",  desc:"Generación de imágenes"},
+  {id:"freepik",   label:"Freepik",         icon:"🖌️",cat:"Creatividad",  desc:"Banco de imágenes"},
+  {id:"hostinger", label:"Hostinger",       icon:"🌍", cat:"Dominio",      desc:"Dominios, hosting, VPS"},
+  {id:"cfdev",     label:"CF Workers/R2",   icon:"🟠", cat:"Dominio",      desc:"Workers, R2, D1, KV"},
+];
+
+const FIELDS = {
+  whm:        [{k:"WHM_URL",l:"URL WHM",p:"https://servidor.com:2087",t:"url"},{k:"WHM_USER",l:"Usuario",p:"root",t:"text"},{k:"WHM_TOKEN",l:"API Token",p:"xxxxxxxx",t:"pw"},{k:"WHM_PRIVILEGE",l:"Privilegio",t:"sel",opts:["admin","reseller","soporte"]}],
+  whmcs:      [{k:"WHMCS_URL",l:"URL WHMCS",p:"https://billing.com",t:"url"},{k:"WHMCS_API_ID",l:"API Identifier",p:"xxxxxxxx",t:"pw"},{k:"WHMCS_API_SECRET",l:"API Secret",p:"xxxxxxxx",t:"pw"},{k:"WHMCS_PRIVILEGE",l:"Privilegio",t:"sel",opts:["admin","soporte","lectura"]}],
+  ssh:        [{k:"SSH_HOST",l:"Host / IP",p:"192.168.1.1",t:"text"},{k:"SSH_PORT",l:"Puerto",p:"22",t:"text"},{k:"SSH_USER",l:"Usuario",p:"deploy",t:"text"},{k:"SSH_KEY_PATH",l:"Llave privada",p:"~/.ssh/id_rsa",t:"text"},{k:"SSH_WORK_DIR",l:"Directorio",p:"/home/user/public_html",t:"text"}],
+  perfex:     [{k:"PERFEX_URL",l:"URL Perfex",p:"https://crm.bbs.com",t:"url"},{k:"PERFEX_TOKEN",l:"API Token",p:"xxxxxxxx",t:"pw"}],
+  cloudflare: [{k:"CF_API_TOKEN",l:"API Token",p:"xxxxxxxx",t:"pw"},{k:"CF_ACCOUNT_ID",l:"Account ID",p:"xxxxxxxx",t:"text"},{k:"CF_ZONES",l:"Dominios (coma)",p:"ejemplo.com, otro.mx",t:"text"}],
+  qc:         [{k:"QC_SITE_URL",l:"URL del sitio",p:"https://cliente.com",t:"url"},{k:"QC_WHM_USER",l:"Usuario WHM",p:"clienteuser",t:"text"}],
+  meta:       [{k:"META_APP_ID",l:"App ID",p:"123456789",t:"text"},{k:"META_APP_SECRET",l:"App Secret",p:"xxxxxxxx",t:"pw"},{k:"META_ACCESS_TOKEN",l:"Access Token",p:"EAAxxxxxxxx",t:"pw"},{k:"META_PAGE_ID",l:"Page ID",p:"123456789",t:"text"},{k:"META_IG_ID",l:"Instagram Account ID",p:"123456789",t:"text"},{k:"META_AD_ACCOUNT",l:"Ad Account ID",p:"act_xxxxxxx",t:"text"}],
+  tiktok:     [{k:"TIKTOK_CLIENT_KEY",l:"Client Key",p:"xxxxxxxx",t:"pw"},{k:"TIKTOK_SECRET",l:"Client Secret",p:"xxxxxxxx",t:"pw"},{k:"TIKTOK_TOKEN",l:"Access Token",p:"xxxxxxxx",t:"pw"},{k:"TIKTOK_OPEN_ID",l:"Open ID",p:"xxxxxxxx",t:"text"}],
+  google:     [{k:"GOOGLE_API_KEY",l:"API Key",p:"AIzaxxxxxxxx",t:"pw"},{k:"GOOGLE_PROJECT",l:"Project ID",p:"mi-proyecto-123",t:"text"}],
+  gmail:      [{k:"GMAIL_EMAIL",l:"Correo",p:"soporte@cliente.com",t:"text"},{k:"GMAIL_CLIENT_ID",l:"Client ID OAuth2",p:"xxxx.apps.googleusercontent.com",t:"text"},{k:"GMAIL_SECRET",l:"Client Secret",p:"xxxxxxxx",t:"pw"},{k:"GMAIL_REFRESH",l:"Refresh Token",p:"1//xxxxxxxx",t:"pw"}],
+  gdrive:     [{k:"GDRIVE_CLIENT_ID",l:"Client ID",p:"xxxx.apps.googleusercontent.com",t:"text"},{k:"GDRIVE_SECRET",l:"Client Secret",p:"xxxxxxxx",t:"pw"},{k:"GDRIVE_REFRESH",l:"Refresh Token",p:"1//xxxxxxxx",t:"pw"}],
+  gcal:       [{k:"GCAL_CLIENT_ID",l:"Client ID",p:"xxxx.apps.googleusercontent.com",t:"text"},{k:"GCAL_SECRET",l:"Client Secret",p:"xxxxxxxx",t:"pw"},{k:"GCAL_REFRESH",l:"Refresh Token",p:"1//xxxxxxxx",t:"pw"},{k:"GCAL_CAL_ID",l:"Calendar ID",p:"primary",t:"text"}],
+  canva:      [{k:"CANVA_CLIENT_ID",l:"Client ID",p:"OAuthxxxx",t:"text"},{k:"CANVA_SECRET",l:"Client Secret",p:"xxxxxxxx",t:"pw"},{k:"CANVA_TOKEN",l:"Access Token",p:"xxxxxxxx",t:"pw"}],
+  elevenlabs: [{k:"ELEVENLABS_KEY",l:"API Key",p:"xxxxxxxx",t:"pw"},{k:"ELEVENLABS_VOICE",l:"Voz",p:"Rachel",t:"text"}],
+  flux:       [{k:"FLUX_API_KEY",l:"API Key",p:"xxxxxxxx",t:"pw"}],
+  freepik:    [{k:"FREEPIK_KEY",l:"API Key",p:"xxxxxxxx",t:"pw"}],
+  hostinger:  [{k:"HOSTINGER_TOKEN",l:"API Token",p:"xxxxxxxx",t:"pw"}],
+  cfdev:      [{k:"CF_DEV_TOKEN",l:"API Token",p:"xxxxxxxx",t:"pw"},{k:"CF_DEV_ACCOUNT",l:"Account ID",p:"xxxxxxxx",t:"text"}],
+};
+
+const DEST = [
+  {id:"github",icon:"🐙",label:"GitHub",   desc:"Repositorio + Personal Access Token"},
+  {id:"ssh",   icon:"🔒",label:"SSH",      desc:"Servidor vía SSH"},
+  {id:"whm",   icon:"🖥️",label:"WHM",     desc:"Servidor cPanel/WHM"},
+  {id:"local", icon:"💾",label:"Solo generar",desc:"Copiar archivos manualmente"},
+];
+
+const STEPS = ["Cliente","Destino","Servicios","Credenciales","Confirmar","✅ Listo"];
+const CATS  = [...new Set(SERVICES.map(s=>s.cat))];
+const slug  = n => n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+
+function genEnv(client, creds, sels){
+  const lines=[`# BBS Comunicaciones — MCPs`,`# Cliente: ${client.name}`,`# ${new Date().toISOString().slice(0,10)}`,`# ⚠️ PRIVADO — NO SUBIR A GIT`,``];
+  sels.forEach(id=>{
+    const s=SERVICES.find(x=>x.id===id);
+    lines.push(`# ── ${s.label}`);
+    (FIELDS[id]||[]).forEach(f=>lines.push(`${f.k}=${creds[id]?.[f.k]||"CONFIGURAR_AQUI"}`));
+    lines.push("");
+  });
+  return lines.join("\n");
+}
+
+function genConfig(client, creds, sels){
+  const sl=slug(client.name);
+  const servers={};
+  sels.forEach(id=>{
+    const env={};
+    (FIELDS[id]||[]).forEach(f=>{env[f.k]=creds[id]?.[f.k]||"CONFIGURAR_AQUI";});
+    servers[`${id}-${sl}`]={command:"npx",args:["-y",`@bbs/${id}-mcp`],env};
+  });
+  return JSON.stringify({mcpServers:servers},null,2);
+}
+
+function CopyBtn({text}){
+  const [ok,setOk]=useState(false);
+  return <button onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(text);setOk(true);setTimeout(()=>setOk(false),1800);}}
+    style={{padding:"4px 12px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:700,
+      background:ok?"#22c55e":"#e2e8f0",color:ok?"#fff":"#475569",transition:"all .2s"}}>
+    {ok?"✓ Copiado":"📋 Copiar"}
+  </button>;
+}
+
+function FieldInput({f,val,onChange}){
+  const [show,setShow]=useState(false);
+  const base={width:"100%",padding:"9px 12px",border:"1.5px solid #e2e8f0",borderRadius:9,fontSize:13,outline:"none",fontFamily:"inherit",boxSizing:"border-box"};
+  if(f.t==="sel") return(
+    <div style={{marginBottom:14}}>
+      <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5}}>{f.l}</label>
+      <select value={val||f.opts[0]} onChange={e=>onChange(e.target.value)} style={{...base,background:"#fff"}}>
+        {f.opts.map(o=><option key={o}>{o}</option>)}
+      </select>
+    </div>
+  );
+  return(
+    <div style={{marginBottom:14}}>
+      <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5}}>{f.l}</label>
+      <div style={{position:"relative"}}>
+        <input type={f.t==="pw"&&!show?"password":"text"} value={val||""} onChange={e=>onChange(e.target.value)}
+          placeholder={f.p} style={{...base,paddingRight:f.t==="pw"?36:12}}/>
+        {f.t==="pw"&&<button onClick={()=>setShow(!show)} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",
+          background:"none",border:"none",cursor:"pointer",fontSize:15,color:"#94a3b8"}}>{show?"🙈":"👁️"}</button>}
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [step,setStep]=useState(0);
+  const [client,setClient]=useState({name:"",contact:"",email:"",notes:""});
+  const [dest,setDest]=useState({type:"github",url:"",token:"",user:"",port:"22",path:""});
+  const [sel,setSel]=useState([]);
+  const [creds,setCreds]=useState({});
+  const [active,setActive]=useState(null);
+  const [err,setErr]=useState({});
+
+  const sc=(k,v)=>setClient(c=>({...c,[k]:v}));
+  const sd=(k,v)=>setDest(d=>({...d,[k]:v}));
+  const scr=(id,k,v)=>setCreds(c=>({...c,[id]:{...(c[id]||{}),[k]:v}}));
+  const tog=id=>{setSel(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id]);if(!active)setActive(id);};
+
+  const validate=()=>{
+    if(step===0&&!client.name.trim()){setErr({name:"Requerido"});return false;}
+    if(step===1&&dest.type!=="local"){
+      if(!dest.url.trim()){setErr({url:"Requerido"});return false;}
+      if(!dest.token.trim()){setErr({token:"Requerido"});return false;}
+    }
+    if(step===2&&sel.length===0){setErr({s:"Selecciona al menos uno"});return false;}
+    setErr({});return true;
+  };
+  const next=()=>{if(validate()){setStep(s=>s+1);if(step===2)setActive(sel[0]||null);}};
+  const back=()=>setStep(s=>s-1);
+  const reset=()=>{setStep(0);setClient({name:"",contact:"",email:"",notes:""});setSel([]);setCreds({});setDest({type:"github",url:"",token:"",user:"",port:"22",path:""});setActive(null);};
+
+  const sl=slug(client.name||"cliente");
+  const envTxt=genEnv(client,creds,sel);
+  const cfgTxt=genConfig(client,creds,sel);
+
+  const inp=(label,key,ph,type="text",obj,setter,req)=>(
+    <div style={{marginBottom:14}}>
+      <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5}}>
+        {label}{req&&<span style={{color:"#ef4444",marginLeft:3}}>*</span>}
+      </label>
+      <input type={type} value={obj[key]||""} onChange={e=>setter(key,e.target.value)} placeholder={ph}
+        style={{width:"100%",padding:"9px 12px",border:`1.5px solid ${err[key]?"#ef4444":"#e2e8f0"}`,borderRadius:9,fontSize:13,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
+      {err[key]&&<p style={{color:"#ef4444",fontSize:11,marginTop:4}}>{err[key]}</p>}
+    </div>
+  );
+
+  const renderBody=()=>{
+    if(step===0) return(
+      <div>
+        <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Datos del cliente</h2>
+        <p style={{color:"#64748b",fontSize:13,marginBottom:20}}>¿Para quién configuramos los MCPs?</p>
+        {inp("Nombre o empresa","name","Farmacia López","text",client,sc,true)}
+        {inp("Contacto técnico","contact","Juan López","text",client,sc)}
+        {inp("Email","email","juan@farmacia.com","email",client,sc)}
+        <div style={{marginBottom:14}}>
+          <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5}}>Notas</label>
+          <textarea value={client.notes} onChange={e=>sc("notes",e.target.value)} placeholder="Ej: solo producción, mantenimiento sábados..."
+            style={{width:"100%",padding:"9px 12px",border:"1.5px solid #e2e8f0",borderRadius:9,fontSize:13,outline:"none",height:72,resize:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
+        </div>
+        {client.name&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:9,padding:"8px 14px",fontSize:12,color:"#1d4ed8"}}>
+          🔖 Slug: <code style={{fontWeight:800}}>{sl}</code>
+        </div>}
+      </div>
+    );
+
+    if(step===1) return(
+      <div>
+        <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Destino de instalación</h2>
+        <p style={{color:"#64748b",fontSize:13,marginBottom:16}}>¿Dónde guardar los archivos de configuración?</p>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+          {DEST.map(dt=>(
+            <button key={dt.id} onClick={()=>sd("type",dt.id)}
+              style={{padding:"14px 12px",borderRadius:14,border:`2px solid ${dest.type===dt.id?"#3b82f6":"#e2e8f0"}`,
+                background:dest.type===dt.id?"#eff6ff":"#fff",cursor:"pointer",textAlign:"left",transition:"all .15s"}}>
+              <div style={{fontSize:24,marginBottom:4}}>{dt.icon}</div>
+              <div style={{fontSize:13,fontWeight:700,color:"#0f172a"}}>{dt.label}</div>
+              <div style={{fontSize:11,color:"#64748b",marginTop:2}}>{dt.desc}</div>
+            </button>
+          ))}
+        </div>
+        {dest.type==="github"&&<>
+          {inp("URL del repositorio GitHub","url","https://github.com/usuario/repo","url",dest,sd,true)}
+          {inp("Personal Access Token (PAT)","token","ghp_xxxxxxxxxxxxxxxxxxxx","password",dest,sd,true)}
+          <div style={{background:"#fefce8",border:"1px solid #fde68a",borderRadius:10,padding:"10px 14px",fontSize:11,color:"#854d0e",lineHeight:1.5}}>
+            💡 <strong>github.com → Settings → Developer Settings → Personal access tokens</strong><br/>
+            Activa el permiso <code style={{background:"#fef08a",padding:"1px 4px",borderRadius:4}}>repo</code>
+          </div>
+        </>}
+        {dest.type==="ssh"&&<>
+          {inp("Host / IP del servidor","url","192.168.1.1 o servidor.com","text",dest,sd,true)}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            {inp("Puerto","port","22","text",dest,sd)}
+            {inp("Usuario SSH","user","deploy","text",dest,sd)}
+          </div>
+          {inp("Contraseña / Ruta llave SSH","token","~/.ssh/id_rsa","password",dest,sd,true)}
+          {inp("Directorio destino","path","/home/usuario/mcp-configs","text",dest,sd)}
+        </>}
+        {dest.type==="whm"&&<>
+          {inp("URL del servidor WHM","url","https://servidor.com:2087","url",dest,sd,true)}
+          {inp("WHM API Token","token","xxxxxxxxxxxxxxxx","password",dest,sd,true)}
+        </>}
+        {dest.type==="local"&&<div style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:14,padding:20,textAlign:"center"}}>
+          <div style={{fontSize:40,marginBottom:10}}>💾</div>
+          <p style={{fontSize:13,color:"#475569",lineHeight:1.6}}>Se generarán los archivos en pantalla.<br/>Cópialos manualmente a tu configuración de Claude.</p>
+        </div>}
+      </div>
+    );
+
+    if(step===2) return(
+      <div>
+        <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Selecciona los servicios</h2>
+        <p style={{color:"#64748b",fontSize:13,marginBottom:10}}>¿Qué MCPs necesita <strong>{client.name}</strong>?</p>
+        {err.s&&<div style={{background:"#fef2f2",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#dc2626",marginBottom:12}}>{err.s}</div>}
+        {CATS.map(cat=>(
+          <div key={cat} style={{marginBottom:18}}>
+            <h3 style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>{cat}</h3>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {SERVICES.filter(s=>s.cat===cat).map(svc=>{
+                const on=sel.includes(svc.id);
+                return <button key={svc.id} onClick={()=>tog(svc.id)}
+                  style={{display:"flex",alignItems:"center",gap:8,padding:"10px 10px",borderRadius:11,
+                    border:`2px solid ${on?"#3b82f6":"#e2e8f0"}`,background:on?"#eff6ff":"#fff",cursor:"pointer",textAlign:"left",transition:"all .15s"}}>
+                  <span style={{fontSize:18,flexShrink:0}}>{svc.icon}</span>
+                  <div style={{minWidth:0,flex:1}}>
+                    <div style={{fontSize:12,fontWeight:700,color:on?"#1d4ed8":"#0f172a",lineHeight:1.2}}>{svc.label}</div>
+                    <div style={{fontSize:10,color:"#94a3b8",lineHeight:1.2,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{svc.desc}</div>
+                  </div>
+                  {on&&<span style={{color:"#3b82f6",fontSize:14,flexShrink:0}}>✓</span>}
+                </button>;
+              })}
+            </div>
+          </div>
+        ))}
+        {sel.length>0&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#1d4ed8"}}>
+          <strong>{sel.length} seleccionados:</strong> {sel.map(id=>SERVICES.find(s=>s.id===id)?.icon).join(" ")}
+        </div>}
+      </div>
+    );
+
+    if(step===3){
+      const asd=SERVICES.find(s=>s.id===active);
+      return(
+        <div>
+          <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Credenciales por servicio</h2>
+          <p style={{color:"#64748b",fontSize:13,marginBottom:12}}>Ingresa los datos de acceso para cada servicio.</p>
+          <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:14}}>
+            {sel.map(id=>{
+              const s=SERVICES.find(x=>x.id===id);
+              const done=(FIELDS[id]||[]).filter(f=>f.t!=="sel").some(f=>creds[id]?.[f.k]);
+              return <button key={id} onClick={()=>setActive(id)}
+                style={{display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:20,whiteSpace:"nowrap",
+                  border:`2px solid ${active===id?"#3b82f6":"#e2e8f0"}`,background:active===id?"#eff6ff":"#fff",
+                  cursor:"pointer",fontSize:12,fontWeight:600,color:active===id?"#1d4ed8":"#475569",flexShrink:0}}>
+                {s.icon} {s.label} {done&&<span style={{color:"#22c55e"}}>✓</span>}
+              </button>;
+            })}
+          </div>
+          {asd&&<div style={{background:"#fff",border:"1.5px solid #e2e8f0",borderRadius:14,padding:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,paddingBottom:12,borderBottom:"1px solid #f1f5f9"}}>
+              <span style={{fontSize:28}}>{asd.icon}</span>
+              <div>
+                <div style={{fontWeight:700,fontSize:15,color:"#0f172a"}}>{asd.label}</div>
+                <div style={{fontSize:11,color:"#64748b"}}>{asd.desc}</div>
+              </div>
+            </div>
+            {(FIELDS[active]||[]).map(f=>(
+              <FieldInput key={f.k} f={f} val={creds[active]?.[f.k]} onChange={v=>scr(active,f.k,v)}/>
+            ))}
+          </div>}
+          <p style={{textAlign:"center",fontSize:11,color:"#94a3b8",marginTop:10}}>
+            Puedes dejar vacíos — quedarán como <code>CONFIGURAR_AQUI</code>
+          </p>
+        </div>
+      );
+    }
+
+    if(step===4) return(
+      <div>
+        <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Confirmar</h2>
+        <p style={{color:"#64748b",fontSize:13,marginBottom:20}}>Revisa antes de generar los archivos.</p>
+        {[
+          {label:"Cliente",body:<>
+            <p style={{fontWeight:700,fontSize:14}}>{client.name}</p>
+            {client.contact&&<p style={{fontSize:12,color:"#64748b",marginTop:2}}>{client.contact}{client.email&&` — ${client.email}`}</p>}
+            <p style={{fontSize:11,color:"#94a3b8",marginTop:4}}>Slug: <code style={{fontWeight:700}}>{sl}</code></p>
+          </>},
+          {label:"Destino",body:<div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:22}}>{DEST.find(d=>d.id===dest.type)?.icon}</span>
+            <div>
+              <span style={{fontWeight:700,fontSize:13}}>{DEST.find(d=>d.id===dest.type)?.label}</span>
+              {dest.url&&<p style={{fontSize:11,color:"#64748b",marginTop:2,wordBreak:"break-all"}}>{dest.url}</p>}
+            </div>
+          </div>},
+          {label:`Servicios (${sel.length})`,body:<div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {sel.map(id=>{
+              const s=SERVICES.find(x=>x.id===id);
+              const done=(FIELDS[id]||[]).filter(f=>f.t!=="sel").some(f=>creds[id]?.[f.k]);
+              return <span key={id} style={{padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,
+                background:done?"#dcfce7":"#fef9c3",color:done?"#15803d":"#854d0e"}}>
+                {s.icon} {s.label} {done?"✓":"⚠️"}
+              </span>;
+            })}
+          </div>},
+        ].map(({label,body})=>(
+          <div key={label} style={{background:"#f8fafc",borderRadius:12,padding:"12px 16px",marginBottom:10}}>
+            <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>{label}</p>
+            {body}
+          </div>
+        ))}
+      </div>
+    );
+
+    if(step===5) return(
+      <div>
+        <div style={{textAlign:"center",marginBottom:20}}>
+          <div style={{fontSize:52,marginBottom:8}}>🎉</div>
+          <h2 style={{fontSize:22,fontWeight:800,color:"#0f172a"}}>¡Configuración lista!</h2>
+          <p style={{color:"#64748b",fontSize:13,marginTop:4}}>{client.name} — {sel.length} MCPs</p>
+        </div>
+        <div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:12,padding:"12px 16px",fontSize:12,color:"#1e40af",marginBottom:18,lineHeight:1.6}}>
+          <strong>Siguiente paso:</strong> Copia el bloque JSON y agrégalo a tu <code>claude_desktop_config.json</code>, luego reinicia Claude.
+        </div>
+        {[{t:`.env — ${sl}`,c:envTxt},{t:"claude_desktop_config.json",c:cfgTxt}].map(({t,c})=>(
+          <div key={t} style={{marginBottom:16}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#1e293b",padding:"8px 14px",borderRadius:"12px 12px 0 0"}}>
+              <code style={{color:"#94a3b8",fontSize:11}}>{t}</code>
+              <CopyBtn text={c}/>
+            </div>
+            <pre style={{background:"#0f172a",color:"#4ade80",fontSize:10,padding:"14px 16px",
+              borderRadius:"0 0 12px 12px",margin:0,overflow:"auto",maxHeight:180,whiteSpace:"pre-wrap",wordBreak:"break-all",fontFamily:"'SF Mono',Monaco,monospace"}}>
+              {c}
+            </pre>
+          </div>
+        ))}
+        <div style={{background:"#f8fafc",borderRadius:12,padding:"14px 16px",fontSize:12,lineHeight:1.8}}>
+          <strong style={{color:"#374151"}}>📋 Cómo instalar en Claude Desktop / Cowork:</strong>
+          <ol style={{color:"#64748b",paddingLeft:18,marginTop:6}}>
+            <li>Copia el bloque <code>claude_desktop_config.json</code></li>
+            <li><strong>Mac:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+            <li><strong>Win:</strong> <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
+            <li>Reinicia Claude Desktop o Cowork</li>
+          </ol>
+        </div>
+      </div>
+    );
+  };
+
+  return(
+    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#eff6ff,#eef2ff)",padding:"24px 12px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{display:"inline-flex",alignItems:"center",gap:10,background:"#fff",borderRadius:50,padding:"10px 22px",
+        boxShadow:"0 2px 12px rgba(0,0,0,.08)",border:"1px solid #e2e8f0",marginBottom:20}}>
+        <span style={{fontSize:22}}>🔌</span>
+        <span style={{fontWeight:800,fontSize:16,color:"#0f172a"}}>BBS MCP Installer</span>
+        <span style={{fontSize:11,color:"#94a3b8",borderLeft:"1px solid #e2e8f0",paddingLeft:12}}>Web · Desktop · Mobile</span>
+      </div>
+
+      <div style={{display:"flex",gap:4,flexWrap:"wrap",justifyContent:"center",marginBottom:20,maxWidth:600}}>
+        {STEPS.map((s,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,
+            background:step>i?"#dbeafe":step===i?"#eff6ff":"#f1f5f9",
+            color:step>i?"#1d4ed8":step===i?"#3b82f6":"#94a3b8",
+            border:`1.5px solid ${step>i?"#93c5fd":step===i?"#3b82f6":"#e2e8f0"}`}}>
+            <span style={{width:18,height:18,borderRadius:"50%",background:step>i?"#3b82f6":step===i?"#3b82f6":"#e2e8f0",
+              color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,flexShrink:0}}>
+              {step>i?"✓":i+1}
+            </span>
+            {s}
+          </div>
+        ))}
+      </div>
+
+      <div style={{width:"100%",maxWidth:520,background:"#fff",borderRadius:22,boxShadow:"0 8px 32px rgba(0,0,0,.10)",border:"1px solid #f1f5f9",overflow:"hidden"}}>
+        <div style={{padding:"24px 24px 8px",maxHeight:"62vh",overflowY:"auto"}}>
+          {renderBody()}
+        </div>
+        <div style={{padding:"16px 24px",borderTop:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center",background:"#fafafa"}}>
+          {step===5 ? <>
+            <button onClick={reset} style={{padding:"9px 18px",borderRadius:10,border:"1.5px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:13,color:"#475569",fontWeight:600}}>↺ Nuevo cliente</button>
+            <span style={{fontSize:11,color:"#94a3b8"}}>BBS Comunicaciones</span>
+          </> : <>
+            <button onClick={back} disabled={step===0}
+              style={{padding:"9px 18px",borderRadius:10,border:"1.5px solid #e2e8f0",background:"#fff",cursor:step===0?"not-allowed":"pointer",
+                fontSize:13,color:step===0?"#cbd5e1":"#475569",fontWeight:600,opacity:step===0?.5:1}}>
+              ← Atrás
+            </button>
+            <button onClick={step===4?()=>setStep(5):next}
+              style={{padding:"10px 24px",borderRadius:10,border:"none",background:"#3b82f6",color:"#fff",cursor:"pointer",
+                fontSize:13,fontWeight:700,boxShadow:"0 2px 10px rgba(59,130,246,.4)"}}>
+              {step===4?"🚀 Generar configuración":step===3?"Revisar →":"Siguiente →"}
+            </button>
+          </>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
