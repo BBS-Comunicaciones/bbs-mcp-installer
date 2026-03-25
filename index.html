@@ -275,6 +275,236 @@ const TEXT = "#e2e0dc";
 const TEXT2 = "#8a8784";
 const TEXT3 = "#5a5855";
 
+// Guías de configuración por servicio
+const SERVICE_GUIDES = {
+  whm: {
+    type:"simple",
+    label:"API Token de WHM",
+    link:"https://[TU_SERVIDOR]:2087/scripts2/manage_api_tokens",
+    steps:[
+      "Ingresa a WHM como root",
+      "Ve a Development → Manage API Tokens",
+      "Clic en Generate Token → dale un nombre → copiar",
+    ],
+    note:"El privilegio recomendado es 'soporte' para operaciones del día a día.",
+  },
+  whmcs: {
+    type:"simple",
+    label:"API Credentials de WHMCS",
+    link:"https://[TU_WHMCS]/admin/configgeneral.php",
+    steps:[
+      "En WHMCS Admin → Setup → General Settings → Security",
+      "Activa la API de WHMCS (si no está activa)",
+      "Ve a Setup → API Credentials → Add API Role",
+      "Asigna permisos y genera el Identifier + Secret",
+    ],
+    note:"La IP del servidor BBS debe estar en la lista blanca de la API.",
+  },
+  ssh: {
+    type:"simple",
+    label:"Acceso SSH al servidor",
+    link:"https://[TU_SERVIDOR]:2083",
+    steps:[
+      "Usa el usuario y contraseña del sistema operativo del servidor",
+      "Para llave SSH: genera con ssh-keygen en tu máquina local",
+      "Agrega la llave pública al archivo ~/.ssh/authorized_keys del servidor",
+    ],
+    note:"Se recomienda usar llave SSH en lugar de contraseña por seguridad.",
+  },
+  cloudflare: {
+    type:"simple",
+    label:"API Token de Cloudflare",
+    link:"https://dash.cloudflare.com/profile/api-tokens",
+    steps:[
+      "Cloudflare Dashboard → Mi Perfil → API Tokens",
+      "Clic en Create Token → usar plantilla 'Edit zone DNS'",
+      "Permisos mínimos: Zone:Read + DNS:Edit + Cache Purge",
+      "El Account ID está en la pantalla principal del dashboard (barra lateral derecha)",
+      "Los dominios (Zones): lista separada por comas, ej: ejemplo.com, otro.cr",
+    ],
+  },
+  qc: {
+    type:"simple",
+    label:"Quick Cache — WordPress",
+    link:"https://sistema.bbscomunicaciones.com",
+    steps:[
+      "El plugin Quick Cache debe estar instalado en el WordPress del cliente",
+      "La URL del sitio es la URL principal del WordPress (con https://)",
+      "El usuario WHM es el usuario cPanel del hosting del sitio",
+    ],
+  },
+  meta: {
+    type:"complex",
+    label:"Meta for Developers — App Token",
+    link:"https://developers.facebook.com/apps",
+    steps:[
+      "Ve a developers.facebook.com → Mis Apps → Crear App",
+      "Tipo de app: 'Empresa' o 'Consumidor' según el caso",
+      "Agrega los productos: Facebook Login + Pages API + Instagram Basic Display",
+      "Para Ads: agrega también Marketing API",
+      "Genera un Page Access Token permanente desde el Graph API Explorer",
+      "El Page ID y el Instagram Account ID están en la configuración de la página",
+      "El Ad Account ID está en Administrador de Anuncios → formato: act_XXXXXXXX",
+    ],
+    perms:["pages_manage_posts","pages_read_engagement","instagram_basic","ads_management","instagram_content_publish"],
+    link2:"https://developers.facebook.com/tools/explorer",
+    link2label:"Graph API Explorer",
+    note:"Los tokens de página no vencen si la app está verificada y el token es de larga duración.",
+  },
+  tiktok: {
+    type:"complex",
+    label:"TikTok for Developers — App",
+    link:"https://developers.tiktok.com",
+    steps:[
+      "Regístrate en developers.tiktok.com → My Apps → Create App",
+      "Categoría: 'Creator Tools' o 'Marketing'",
+      "Solicita acceso a 'Content Posting API' y 'Ads API'",
+      "Completa la revisión de la app (puede tardar 1-3 días hábiles)",
+      "Una vez aprobada, genera el Client Key y Client Secret",
+      "El Access Token y Open ID se obtienen via OAuth 2.0 del usuario final",
+    ],
+    note:"TikTok requiere que la app sea revisada antes de tener acceso completo a la API.",
+  },
+  google: {
+    type:"simple",
+    label:"Google Cloud — API Key",
+    link:"https://console.cloud.google.com/apis/credentials",
+    steps:[
+      "Ve a console.cloud.google.com → selecciona o crea un proyecto",
+      "APIs & Services → Library → habilita: Maps JavaScript API, Vision API, YouTube Data API v3, Cloud Translation API",
+      "APIs & Services → Credentials → Create Credentials → API Key",
+      "Restringe la clave a las APIs que habilitaste",
+      "El Project ID está en la pantalla principal del proyecto (ej: mi-proyecto-123456)",
+    ],
+  },
+  gmail: {
+    type:"oauth2",
+    label:"Gmail OAuth 2.0",
+    link:"https://console.cloud.google.com/apis/credentials",
+    steps:[
+      "console.cloud.google.com → proyecto → APIs & Services → Library",
+      "Habilita Gmail API",
+      "Credentials → Create Credentials → OAuth 2.0 Client ID",
+      "Tipo: Web Application, URI de redirección: https://developers.google.com/oauthplayground",
+      "Guarda el Client ID y Client Secret",
+      "Ve a OAuth Playground (link abajo) → Settings (⚙️) → usa tus propias credenciales",
+      "Scope: https://mail.google.com/ → Authorize → Exchange code for tokens",
+      "Copia el Refresh Token (NO el Access Token, ese vence)",
+    ],
+    scopes:["https://mail.google.com/"],
+    link2:"https://developers.google.com/oauthplayground",
+    link2label:"OAuth Playground",
+    note:"El Refresh Token no vence. Guárdalo en un lugar seguro.",
+  },
+  gdrive: {
+    type:"oauth2",
+    label:"Google Drive OAuth 2.0",
+    link:"https://console.cloud.google.com/apis/credentials",
+    steps:[
+      "console.cloud.google.com → APIs → habilita Google Drive API",
+      "Credentials → OAuth 2.0 Client ID → Web Application",
+      "URI de redirección: https://developers.google.com/oauthplayground",
+      "En OAuth Playground: scope https://www.googleapis.com/auth/drive",
+      "Obtén el Refresh Token",
+    ],
+    scopes:["https://www.googleapis.com/auth/drive"],
+    link2:"https://developers.google.com/oauthplayground",
+    link2label:"OAuth Playground",
+  },
+  gcal: {
+    type:"oauth2",
+    label:"Google Calendar OAuth 2.0",
+    link:"https://console.cloud.google.com/apis/credentials",
+    steps:[
+      "console.cloud.google.com → APIs → habilita Google Calendar API",
+      "Credentials → OAuth 2.0 Client ID → Web Application",
+      "URI de redirección: https://developers.google.com/oauthplayground",
+      "En OAuth Playground: scope https://www.googleapis.com/auth/calendar",
+      "Obtén el Refresh Token",
+      "El Calendar ID generalmente es 'primary' o el email del usuario",
+    ],
+    scopes:["https://www.googleapis.com/auth/calendar"],
+    link2:"https://developers.google.com/oauthplayground",
+    link2label:"OAuth Playground",
+  },
+  canva: {
+    type:"oauth2",
+    label:"Canva — OAuth 2.0",
+    link:"https://www.canva.com/developers/integrations",
+    steps:[
+      "Ve a canva.com/developers → Create Integration",
+      "Llena el nombre y descripción de la integración",
+      "En Auth: selecciona OAuth 2.0 → copia Client ID y Client Secret",
+      "URI de redirección: http://localhost:3000/callback",
+      "Genera el Access Token siguiendo el flujo OAuth de Canva",
+    ],
+    link2:"https://www.canva.dev/docs/connect/",
+    link2label:"Documentación Canva API",
+  },
+  elevenlabs: {
+    type:"simple",
+    label:"ElevenLabs — API Key",
+    link:"https://elevenlabs.io/settings",
+    steps:[
+      "Ve a elevenlabs.io → Profile Settings → API Key",
+      "Copia tu API Key (empieza con sk_...)",
+      "El nombre de la voz es el nombre exacto de la voz (ej: Rachel, Antoni, Bella)",
+      "Voces disponibles en: elevenlabs.io/voice-library",
+    ],
+  },
+  flux: {
+    type:"simple",
+    label:"Flux AI — API Key",
+    link:"https://api.bfl.ml",
+    steps:[
+      "Ve a api.bfl.ml → Regístrate / Inicia sesión",
+      "Dashboard → API Keys → Create Key",
+      "Copia la clave generada",
+    ],
+  },
+  freepik: {
+    type:"simple",
+    label:"Freepik — API Key",
+    link:"https://www.freepik.com/profile/api",
+    steps:[
+      "Inicia sesión en freepik.com",
+      "Ve a tu Perfil → API Keys",
+      "Genera una nueva API Key",
+    ],
+    note:"Se requiere plan Premium o Superior para acceso a la API.",
+  },
+  hostinger: {
+    type:"simple",
+    label:"Hostinger — API Token",
+    link:"https://hpanel.hostinger.com/api-access",
+    steps:[
+      "Inicia sesión en hpanel.hostinger.com",
+      "Ve a Cuenta → API Access",
+      "Genera un nuevo token de acceso",
+    ],
+  },
+  cfdev: {
+    type:"simple",
+    label:"Cloudflare Workers / R2 — Token",
+    link:"https://dash.cloudflare.com/profile/api-tokens",
+    steps:[
+      "Cloudflare Dashboard → Mi Perfil → API Tokens → Create Token",
+      "Permisos: Workers Scripts:Edit, R2 Storage:Edit, D1:Edit, KV Storage:Edit",
+      "El Account ID está en la pantalla principal del dashboard",
+    ],
+  },
+  perfex: {
+    type:"simple",
+    label:"Perfex CRM — API Token",
+    link:"https://[TU_PERFEX]/admin/authentication/api_token",
+    steps:[
+      "Ingresa al panel de Perfex como admin",
+      "Ve a Configuración → Autenticación → API Token",
+      "Activa la API y copia el token generado",
+    ],
+  },
+};
+
 function genEnv(client, creds, sels){
   const lines=[`# BBS Comunicaciones — MCPs`,`# Cliente: ${client.name}`,`# ${new Date().toISOString().slice(0,10)}`,`# ⚠️ PRIVADO — NO SUBIR A GIT`,``];
   sels.forEach(id=>{
@@ -552,14 +782,82 @@ function App(){
             <div className="bbs-card" style={{padding:16}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,paddingBottom:14,borderBottom:`1px solid ${BORDER}`}}>
                 <span style={{fontSize:28}}>{asd.icon}</span>
-                <div>
+                <div style={{flex:1}}>
                   <div style={{fontWeight:700,fontSize:15,color:TEXT}}>{asd.label}</div>
                   <div style={{fontSize:11,color:TEXT2}}>{asd.desc}</div>
                 </div>
+                {SERVICE_GUIDES[active]&&(
+                  <span style={{fontSize:9,fontWeight:700,padding:"3px 8px",borderRadius:20,
+                    background:SERVICE_GUIDES[active].type==="oauth2"?"rgba(92,130,184,0.15)":
+                               SERVICE_GUIDES[active].type==="complex"?"rgba(220,120,60,0.15)":
+                               "rgba(92,184,92,0.12)",
+                    color:SERVICE_GUIDES[active].type==="oauth2"?"#7aaaf0":
+                          SERVICE_GUIDES[active].type==="complex"?"#e08040":
+                          "#5cb85c",
+                    border:`1px solid ${SERVICE_GUIDES[active].type==="oauth2"?"rgba(122,170,240,0.3)":
+                                        SERVICE_GUIDES[active].type==="complex"?"rgba(220,120,60,0.3)":
+                                        "rgba(92,184,92,0.3)"}`}}>
+                    {SERVICE_GUIDES[active].type==="oauth2"?"OAuth 2.0":
+                     SERVICE_GUIDES[active].type==="complex"?"App requerida":"API Key"}
+                  </span>
+                )}
               </div>
               {(FIELDS[active]||[]).map(f=>(
                 <FieldInput key={f.k} f={f} val={creds[active]?.[f.k]} onChange={v=>scr(active,f.k,v)}/>
               ))}
+              {SERVICE_GUIDES[active]&&(
+                <div style={{marginTop:14,paddingTop:14,borderTop:`1px solid ${BORDER}`}}>
+                  <p style={{fontSize:10,fontWeight:700,color:TEXT3,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>
+                    📌 {SERVICE_GUIDES[active].label}
+                  </p>
+                  <ol style={{paddingLeft:16,margin:0}}>
+                    {SERVICE_GUIDES[active].steps.map((s,i)=>(
+                      <li key={i} style={{fontSize:11,color:TEXT2,lineHeight:1.7,marginBottom:2}}>{s}</li>
+                    ))}
+                  </ol>
+                  {SERVICE_GUIDES[active].perms&&(
+                    <div style={{marginTop:10,padding:"8px 10px",background:"rgba(220,120,60,0.08)",borderRadius:8,border:"1px solid rgba(220,120,60,0.25)"}}>
+                      <p style={{fontSize:10,fontWeight:700,color:"#e08040",marginBottom:5}}>⚠️ Permisos requeridos:</p>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                        {SERVICE_GUIDES[active].perms.map(p=>(
+                          <code key={p} style={{fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(220,120,60,0.15)",color:"#e08040"}}>{p}</code>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {SERVICE_GUIDES[active].scopes&&(
+                    <div style={{marginTop:10,padding:"8px 10px",background:"rgba(122,170,240,0.07)",borderRadius:8,border:"1px solid rgba(122,170,240,0.25)"}}>
+                      <p style={{fontSize:10,fontWeight:700,color:"#7aaaf0",marginBottom:5}}>🔐 Scope OAuth:</p>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                        {SERVICE_GUIDES[active].scopes.map(s=>(
+                          <code key={s} style={{fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(122,170,240,0.12)",color:"#7aaaf0",wordBreak:"break-all"}}>{s}</code>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {SERVICE_GUIDES[active].note&&(
+                    <p style={{fontSize:10,color:"#c9ab5a",marginTop:8,lineHeight:1.6,padding:"6px 8px",background:"rgba(190,159,65,0.06)",borderRadius:6}}>
+                      💡 {SERVICE_GUIDES[active].note}
+                    </p>
+                  )}
+                  <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}>
+                    <a href={SERVICE_GUIDES[active].link} target="_blank" rel="noopener noreferrer"
+                      style={{display:"inline-flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:8,
+                        background:"rgba(190,159,65,0.1)",border:`1px solid rgba(190,159,65,0.3)`,
+                        color:GOLD,fontSize:10,fontWeight:700,textDecoration:"none",transition:"all .15s"}}>
+                      🔗 Abrir panel de credenciales
+                    </a>
+                    {SERVICE_GUIDES[active].link2&&(
+                      <a href={SERVICE_GUIDES[active].link2} target="_blank" rel="noopener noreferrer"
+                        style={{display:"inline-flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:8,
+                          background:"rgba(122,170,240,0.08)",border:`1px solid rgba(122,170,240,0.25)`,
+                          color:"#7aaaf0",fontSize:10,fontWeight:700,textDecoration:"none"}}>
+                        🔗 {SERVICE_GUIDES[active].link2label||"Herramienta adicional"}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           <p style={{textAlign:"center",fontSize:11,color:TEXT3,marginTop:12}}>
