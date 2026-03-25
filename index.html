@@ -342,6 +342,28 @@ function BBSInput({label,keyN,placeholder,type="text",obj,setter,req,err}){
   );
 }
 
+const MCP_API = "https://control.bbscomunicaciones.com/mcp_licencias.php";
+
+async function registrarLicencia(client, dest, sel){
+  try {
+    const res = await fetch(MCP_API + "?action=registrar", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        cliente:     client.name,
+        email:       client.email  || "",
+        contacto:    client.contact|| "",
+        destino:     dest.type,
+        destino_url: dest.url      || "",
+        servicios:   sel,
+        notas:       client.notes  || "",
+      })
+    });
+    const data = await res.json();
+    return data.ok ? data.licencia : null;
+  } catch(e) { return null; }
+}
+
 function App(){
   const [step,setStep]=useState(0);
   const [client,setClient]=useState({name:"",contact:"",email:"",notes:""});
@@ -350,6 +372,8 @@ function App(){
   const [creds,setCreds]=useState({});
   const [active,setActive]=useState(null);
   const [err,setErr]=useState({});
+  const [licencia,setLicencia]=useState(null);
+  const [registrando,setRegistrando]=useState(false);
 
   const sc=(k,v)=>setClient(c=>({...c,[k]:v}));
   const sd=(k,v)=>setDest(d=>({...d,[k]:v}));
@@ -367,7 +391,15 @@ function App(){
   };
   const next=()=>{if(validate()){setStep(s=>s+1);if(step===2)setActive(sel[0]||null);}};
   const back=()=>setStep(s=>s-1);
-  const reset=()=>{setStep(0);setClient({name:"",contact:"",email:"",notes:""});setSel([]);setCreds({});setDest({type:"github",url:"",token:"",user:"",port:"22",path:""});setActive(null);};
+  const reset=()=>{setStep(0);setClient({name:"",contact:"",email:"",notes:""});setSel([]);setCreds({});setDest({type:"github",url:"",token:"",user:"",port:"22",path:""});setActive(null);setLicencia(null);};
+
+  const generar=async()=>{
+    setRegistrando(true);
+    const lic = await registrarLicencia(client, dest, sel);
+    setLicencia(lic);
+    setRegistrando(false);
+    setStep(5);
+  };
 
   const sl=slug(client.name||"cliente");
   const envTxt=genEnv(client,creds,sel);
@@ -568,6 +600,16 @@ function App(){
           <h2 style={{fontSize:22,fontWeight:800,color:TEXT}}>¡Configuración lista!</h2>
           <p style={{color:TEXT2,fontSize:13,marginTop:4}}><span style={{color:GOLD,fontWeight:700}}>{client.name}</span> — {sel.length} MCPs configurados</p>
         </div>
+        {licencia&&(
+          <div style={{background:"rgba(190,159,65,0.07)",border:`1px solid rgba(190,159,65,0.35)`,borderRadius:12,
+            padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+            <div>
+              <p style={{fontSize:10,fontWeight:700,color:TEXT3,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>🔑 Licencia BBS</p>
+              <code style={{fontSize:15,fontWeight:800,color:GOLD,letterSpacing:"0.08em"}}>{licencia}</code>
+            </div>
+            <CopyBtn text={licencia}/>
+          </div>
+        )}
         <div style={{background:"rgba(190,159,65,0.07)",border:`1px solid rgba(190,159,65,0.25)`,borderRadius:12,padding:"12px 16px",fontSize:12,color:"#c9ab5a",marginBottom:20,lineHeight:1.7}}>
           <strong>Siguiente paso:</strong> Copia el JSON y pégalo en tu <code style={{color:GOLD}}>claude_desktop_config.json</code>, luego reinicia Claude.
         </div>
@@ -658,9 +700,9 @@ function App(){
               style={{padding:"9px 18px",borderRadius:10,fontSize:13,opacity:step===0?.3:1,cursor:step===0?"not-allowed":"pointer"}}>
               ← Atrás
             </button>
-            <button onClick={step===4?()=>setStep(5):next} className="bbs-btn-primary"
-              style={{padding:"10px 24px",borderRadius:10,fontSize:13}}>
-              {step===4?"🚀 Generar configuración":step===3?"Revisar →":"Siguiente →"}
+            <button onClick={step===4?generar:next} disabled={registrando} className="bbs-btn-primary"
+              style={{padding:"10px 24px",borderRadius:10,fontSize:13,opacity:registrando?0.7:1}}>
+              {registrando?"⏳ Registrando...":step===4?"🚀 Generar configuración":step===3?"Revisar →":"Siguiente →"}
             </button>
           </>}
         </div>
