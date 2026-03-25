@@ -7,18 +7,207 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#eff6ff,#eef2ff);min-height:100vh}
-    ::-webkit-scrollbar{width:6px;height:6px}
-    ::-webkit-scrollbar-track{background:#f1f5f9}
-    ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
-    input,select,textarea{font-family:inherit}
-    code{font-family:'SF Mono',Monaco,monospace}
+    body{
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+      background:#111010;
+      min-height:100vh;
+      color:#e2e0dc;
+      overflow-x:hidden;
+    }
+    #particles-canvas{
+      position:fixed;
+      top:0;left:0;
+      width:100%;height:100%;
+      pointer-events:none;
+      z-index:0;
+    }
+    #root{position:relative;z-index:1;}
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:#1a1918}
+    ::-webkit-scrollbar-thumb{background:#be9f41;border-radius:4px}
+    input,select,textarea,button{font-family:'Inter',sans-serif}
+    input::placeholder{color:#5a5855}
+    input:focus,select:focus,textarea:focus{
+      outline:none;
+      border-color:#be9f41 !important;
+      box-shadow:0 0 0 2px rgba(190,159,65,0.15);
+    }
+    .gold{color:#be9f41}
+    .bbs-btn-primary{
+      background:linear-gradient(135deg,#be9f41,#a07a27);
+      color:#111010;
+      border:none;
+      cursor:pointer;
+      font-weight:700;
+      transition:all .2s;
+    }
+    .bbs-btn-primary:hover{
+      background:linear-gradient(135deg,#d4b655,#be9f41);
+      box-shadow:0 4px 20px rgba(190,159,65,0.4);
+      transform:translateY(-1px);
+    }
+    .bbs-btn-secondary{
+      background:transparent;
+      color:#be9f41;
+      border:1.5px solid #2e2c28;
+      cursor:pointer;
+      font-weight:600;
+      transition:all .2s;
+    }
+    .bbs-btn-secondary:hover{border-color:#be9f41;background:rgba(190,159,65,0.06);}
+    .bbs-input{
+      background:#1a1918;
+      border:1.5px solid #2e2c28;
+      color:#e2e0dc;
+      border-radius:10px;
+      padding:10px 14px;
+      font-size:13px;
+      width:100%;
+      transition:border-color .2s;
+    }
+    .bbs-card{
+      background:#181614;
+      border:1px solid #272420;
+      border-radius:16px;
+    }
+    .service-btn{
+      background:#1a1918;
+      border:1.5px solid #272420;
+      border-radius:12px;
+      cursor:pointer;
+      text-align:left;
+      padding:10px;
+      transition:all .15s;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .service-btn:hover{border-color:#be9f41;background:#1f1d1a;}
+    .service-btn.active{border-color:#be9f41;background:rgba(190,159,65,0.08);}
+    .step-chip{
+      display:flex;align-items:center;gap:6px;
+      padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;
+      transition:all .2s;
+    }
+    .step-dot{
+      width:18px;height:18px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:9px;font-weight:700;flex-shrink:0;
+    }
+    pre{font-family:'SF Mono',Monaco,'Courier New',monospace}
+    code{font-family:'SF Mono',Monaco,'Courier New',monospace;font-size:12px}
   </style>
 </head>
 <body>
+<canvas id="particles-canvas"></canvas>
 <div id="root"></div>
+
+<script>
+// ── Particle system ──────────────────────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('particles-canvas');
+  const ctx    = canvas.getContext('2d');
+  const GOLD   = 'rgba(190,159,65,';
+  let W, H, particles = [], mouse = {x:-9999,y:-9999};
+
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+
+  function Particle(){
+    this.reset = function(init){
+      this.x    = rand(0,W);
+      this.y    = init ? rand(0,H) : H + 10;
+      this.r    = rand(0.6,2.2);
+      this.vx   = rand(-0.15,0.15);
+      this.vy   = rand(-0.35,-0.08);
+      this.a    = rand(0.08,0.45);
+      this.da   = rand(-0.0004,0.0004);
+      this.life = rand(0.6,1);
+      this.age  = 0;
+    };
+    this.reset(true);
+
+    this.update = function(){
+      this.x  += this.vx;
+      this.y  += this.vy;
+      this.a  += this.da;
+      this.a   = Math.max(0.04, Math.min(0.55, this.a));
+      this.age += 0.003;
+
+      // subtle mouse repulsion
+      let dx = this.x - mouse.x, dy = this.y - mouse.y;
+      let dist = Math.sqrt(dx*dx+dy*dy);
+      if(dist < 90){
+        let force = (90-dist)/90 * 0.4;
+        this.vx += dx/dist * force * 0.06;
+        this.vy += dy/dist * force * 0.06;
+      }
+
+      if(this.y < -10 || this.age > this.life) this.reset(false);
+    };
+
+    this.draw = function(){
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+      ctx.fillStyle = GOLD + this.a + ')';
+      ctx.fill();
+    };
+  }
+
+  function init(){
+    resize();
+    particles = [];
+    let count = Math.floor((W*H)/12000);
+    count = Math.max(40, Math.min(count, 130));
+    for(let i=0;i<count;i++){
+      let p = new Particle();
+      particles.push(p);
+    }
+  }
+
+  // Connection lines between nearby particles
+  function drawLines(){
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        let dx = particles[i].x - particles[j].x;
+        let dy = particles[i].y - particles[j].y;
+        let d  = Math.sqrt(dx*dx+dy*dy);
+        if(d < 110){
+          let alpha = (1 - d/110) * 0.08;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = GOLD + alpha + ')';
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    drawLines();
+    particles.forEach(p=>{ p.update(); p.draw(); });
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', ()=>{ resize(); init(); });
+  document.addEventListener('mousemove', e=>{ mouse.x=e.clientX; mouse.y=e.clientY; });
+  document.addEventListener('mouseleave', ()=>{ mouse.x=-9999; mouse.y=-9999; });
+
+  init();
+  loop();
+})();
+</script>
+
 <script type="text/babel">
 const { useState } = React;
 
@@ -65,15 +254,26 @@ const FIELDS = {
 };
 
 const DEST = [
-  {id:"github",icon:"🐙",label:"GitHub",   desc:"Repositorio + Personal Access Token"},
+  {id:"github",icon:"🐙",label:"GitHub",   desc:"Repositorio + PAT"},
   {id:"ssh",   icon:"🔒",label:"SSH",      desc:"Servidor vía SSH"},
   {id:"whm",   icon:"🖥️",label:"WHM",     desc:"Servidor cPanel/WHM"},
-  {id:"local", icon:"💾",label:"Solo generar",desc:"Copiar archivos manualmente"},
+  {id:"local", icon:"💾",label:"Local",    desc:"Solo generar archivos"},
 ];
 
-const STEPS = ["Cliente","Destino","Servicios","Credenciales","Confirmar","✅ Listo"];
+const STEPS = ["Cliente","Destino","Servicios","Credenciales","Confirmar","✓ Listo"];
 const CATS  = [...new Set(SERVICES.map(s=>s.cat))];
 const slug  = n => n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+
+const GOLD = "#be9f41";
+const GOLD2 = "#a07a27";
+const BG = "#111010";
+const BG2 = "#181614";
+const BG3 = "#1a1918";
+const BORDER = "#272420";
+const BORDER2 = "#2e2c28";
+const TEXT = "#e2e0dc";
+const TEXT2 = "#8a8784";
+const TEXT3 = "#5a5855";
 
 function genEnv(client, creds, sels){
   const lines=[`# BBS Comunicaciones — MCPs`,`# Cliente: ${client.name}`,`# ${new Date().toISOString().slice(0,10)}`,`# ⚠️ PRIVADO — NO SUBIR A GIT`,``];
@@ -100,32 +300,44 @@ function genConfig(client, creds, sels){
 function CopyBtn({text}){
   const [ok,setOk]=useState(false);
   return <button onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(text);setOk(true);setTimeout(()=>setOk(false),1800);}}
-    style={{padding:"4px 12px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:700,
-      background:ok?"#22c55e":"#e2e8f0",color:ok?"#fff":"#475569",transition:"all .2s"}}>
+    style={{padding:"4px 12px",borderRadius:6,border:`1px solid ${ok?"#be9f41":BORDER2}`,cursor:"pointer",fontSize:11,fontWeight:700,
+      background:ok?"rgba(190,159,65,0.15)":"transparent",color:ok?GOLD:TEXT2,transition:"all .2s"}}>
     {ok?"✓ Copiado":"📋 Copiar"}
   </button>;
 }
 
 function FieldInput({f,val,onChange}){
   const [show,setShow]=useState(false);
-  const base={width:"100%",padding:"9px 12px",border:"1.5px solid #e2e8f0",borderRadius:9,fontSize:13,outline:"none",fontFamily:"inherit",boxSizing:"border-box"};
   if(f.t==="sel") return(
     <div style={{marginBottom:14}}>
-      <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5}}>{f.l}</label>
-      <select value={val||f.opts[0]} onChange={e=>onChange(e.target.value)} style={{...base,background:"#fff"}}>
-        {f.opts.map(o=><option key={o}>{o}</option>)}
+      <label style={{display:"block",fontSize:11,fontWeight:600,color:TEXT2,marginBottom:5,textTransform:"uppercase",letterSpacing:"0.06em"}}>{f.l}</label>
+      <select value={val||f.opts[0]} onChange={e=>onChange(e.target.value)} className="bbs-input">
+        {f.opts.map(o=><option key={o} style={{background:BG2}}>{o}</option>)}
       </select>
     </div>
   );
   return(
     <div style={{marginBottom:14}}>
-      <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5}}>{f.l}</label>
+      <label style={{display:"block",fontSize:11,fontWeight:600,color:TEXT2,marginBottom:5,textTransform:"uppercase",letterSpacing:"0.06em"}}>{f.l}</label>
       <div style={{position:"relative"}}>
         <input type={f.t==="pw"&&!show?"password":"text"} value={val||""} onChange={e=>onChange(e.target.value)}
-          placeholder={f.p} style={{...base,paddingRight:f.t==="pw"?36:12}}/>
+          placeholder={f.p} className="bbs-input" style={{paddingRight:f.t==="pw"?36:14}}/>
         {f.t==="pw"&&<button onClick={()=>setShow(!show)} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",
-          background:"none",border:"none",cursor:"pointer",fontSize:15,color:"#94a3b8"}}>{show?"🙈":"👁️"}</button>}
+          background:"none",border:"none",cursor:"pointer",fontSize:14,color:TEXT3}}>{show?"🙈":"👁️"}</button>}
       </div>
+    </div>
+  );
+}
+
+function BBSInput({label,keyN,placeholder,type="text",obj,setter,req,err}){
+  return(
+    <div style={{marginBottom:16}}>
+      <label style={{display:"block",fontSize:11,fontWeight:600,color:TEXT2,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.06em"}}>
+        {label}{req&&<span style={{color:GOLD,marginLeft:3}}>*</span>}
+      </label>
+      <input type={type} value={obj[keyN]||""} onChange={e=>setter(keyN,e.target.value)} placeholder={placeholder}
+        className="bbs-input" style={{borderColor:err?GOLD:BORDER2}}/>
+      {err&&<p style={{color:GOLD,fontSize:11,marginTop:4}}>⚠ {err}</p>}
     </div>
   );
 }
@@ -145,12 +357,12 @@ function App(){
   const tog=id=>{setSel(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id]);if(!active)setActive(id);};
 
   const validate=()=>{
-    if(step===0&&!client.name.trim()){setErr({name:"Requerido"});return false;}
+    if(step===0&&!client.name.trim()){setErr({name:"El nombre del cliente es requerido"});return false;}
     if(step===1&&dest.type!=="local"){
-      if(!dest.url.trim()){setErr({url:"Requerido"});return false;}
-      if(!dest.token.trim()){setErr({token:"Requerido"});return false;}
+      if(!dest.url.trim()){setErr({url:"La URL es requerida"});return false;}
+      if(!dest.token.trim()){setErr({token:"El token / contraseña es requerido"});return false;}
     }
-    if(step===2&&sel.length===0){setErr({s:"Selecciona al menos uno"});return false;}
+    if(step===2&&sel.length===0){setErr({s:"Selecciona al menos un servicio"});return false;}
     setErr({});return true;
   };
   const next=()=>{if(validate()){setStep(s=>s+1);if(step===2)setActive(sel[0]||null);}};
@@ -161,162 +373,169 @@ function App(){
   const envTxt=genEnv(client,creds,sel);
   const cfgTxt=genConfig(client,creds,sel);
 
-  const inp=(label,key,ph,type="text",obj,setter,req)=>(
-    <div style={{marginBottom:14}}>
-      <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5}}>
-        {label}{req&&<span style={{color:"#ef4444",marginLeft:3}}>*</span>}
-      </label>
-      <input type={type} value={obj[key]||""} onChange={e=>setter(key,e.target.value)} placeholder={ph}
-        style={{width:"100%",padding:"9px 12px",border:`1.5px solid ${err[key]?"#ef4444":"#e2e8f0"}`,borderRadius:9,fontSize:13,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
-      {err[key]&&<p style={{color:"#ef4444",fontSize:11,marginTop:4}}>{err[key]}</p>}
-    </div>
-  );
+  const Div = ()=><div style={{height:1,background:BORDER,margin:"20px 0"}}/>;
 
   const renderBody=()=>{
+
+    // PASO 0
     if(step===0) return(
       <div>
-        <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Datos del cliente</h2>
-        <p style={{color:"#64748b",fontSize:13,marginBottom:20}}>¿Para quién configuramos los MCPs?</p>
-        {inp("Nombre o empresa","name","Farmacia López","text",client,sc,true)}
-        {inp("Contacto técnico","contact","Juan López","text",client,sc)}
-        {inp("Email","email","juan@farmacia.com","email",client,sc)}
-        <div style={{marginBottom:14}}>
-          <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5}}>Notas</label>
+        <h2 style={{fontSize:20,fontWeight:800,color:TEXT,marginBottom:4}}>Datos del cliente</h2>
+        <p style={{color:TEXT2,fontSize:13,marginBottom:24}}>¿Para quién configuramos los MCPs?</p>
+        <BBSInput label="Nombre o empresa" keyN="name" placeholder="Farmacia López" obj={client} setter={sc} req err={err.name}/>
+        <BBSInput label="Contacto técnico" keyN="contact" placeholder="Juan López" obj={client} setter={sc}/>
+        <BBSInput label="Email" keyN="email" placeholder="juan@farmacia.com" type="email" obj={client} setter={sc}/>
+        <div style={{marginBottom:16}}>
+          <label style={{display:"block",fontSize:11,fontWeight:600,color:TEXT2,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.06em"}}>Notas</label>
           <textarea value={client.notes} onChange={e=>sc("notes",e.target.value)} placeholder="Ej: solo producción, mantenimiento sábados..."
-            style={{width:"100%",padding:"9px 12px",border:"1.5px solid #e2e8f0",borderRadius:9,fontSize:13,outline:"none",height:72,resize:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
+            className="bbs-input" style={{height:80,resize:"none"}}/>
         </div>
-        {client.name&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:9,padding:"8px 14px",fontSize:12,color:"#1d4ed8"}}>
-          🔖 Slug: <code style={{fontWeight:800}}>{sl}</code>
-        </div>}
+        {client.name&&(
+          <div style={{background:"rgba(190,159,65,0.08)",border:`1px solid rgba(190,159,65,0.25)`,borderRadius:10,padding:"10px 14px",fontSize:12,color:GOLD}}>
+            🔖 Slug: <code style={{fontWeight:800}}>{sl}</code>
+          </div>
+        )}
       </div>
     );
 
+    // PASO 1
     if(step===1) return(
       <div>
-        <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Destino de instalación</h2>
-        <p style={{color:"#64748b",fontSize:13,marginBottom:16}}>¿Dónde guardar los archivos de configuración?</p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+        <h2 style={{fontSize:20,fontWeight:800,color:TEXT,marginBottom:4}}>Destino de instalación</h2>
+        <p style={{color:TEXT2,fontSize:13,marginBottom:20}}>¿Dónde guardar los archivos de configuración?</p>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:22}}>
           {DEST.map(dt=>(
             <button key={dt.id} onClick={()=>sd("type",dt.id)}
-              style={{padding:"14px 12px",borderRadius:14,border:`2px solid ${dest.type===dt.id?"#3b82f6":"#e2e8f0"}`,
-                background:dest.type===dt.id?"#eff6ff":"#fff",cursor:"pointer",textAlign:"left",transition:"all .15s"}}>
-              <div style={{fontSize:24,marginBottom:4}}>{dt.icon}</div>
-              <div style={{fontSize:13,fontWeight:700,color:"#0f172a"}}>{dt.label}</div>
-              <div style={{fontSize:11,color:"#64748b",marginTop:2}}>{dt.desc}</div>
+              style={{padding:"14px 12px",borderRadius:14,border:`1.5px solid ${dest.type===dt.id?GOLD:BORDER}`,
+                background:dest.type===dt.id?"rgba(190,159,65,0.07)":BG3,cursor:"pointer",textAlign:"left",transition:"all .15s"}}>
+              <div style={{fontSize:22,marginBottom:6}}>{dt.icon}</div>
+              <div style={{fontSize:13,fontWeight:700,color:dest.type===dt.id?GOLD:TEXT}}>{dt.label}</div>
+              <div style={{fontSize:11,color:TEXT3,marginTop:2}}>{dt.desc}</div>
             </button>
           ))}
         </div>
+
         {dest.type==="github"&&<>
-          {inp("URL del repositorio GitHub","url","https://github.com/usuario/repo","url",dest,sd,true)}
-          {inp("Personal Access Token (PAT)","token","ghp_xxxxxxxxxxxxxxxxxxxx","password",dest,sd,true)}
-          <div style={{background:"#fefce8",border:"1px solid #fde68a",borderRadius:10,padding:"10px 14px",fontSize:11,color:"#854d0e",lineHeight:1.5}}>
+          <BBSInput label="URL del repositorio GitHub" keyN="url" placeholder="https://github.com/usuario/repo" type="url" obj={dest} setter={sd} req err={err.url}/>
+          <BBSInput label="Personal Access Token (PAT)" keyN="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" type="password" obj={dest} setter={sd} req err={err.token}/>
+          <div style={{background:"rgba(190,159,65,0.06)",border:`1px solid rgba(190,159,65,0.2)`,borderRadius:10,padding:"10px 14px",fontSize:11,color:"#c9ab5a",lineHeight:1.6}}>
             💡 <strong>github.com → Settings → Developer Settings → Personal access tokens</strong><br/>
-            Activa el permiso <code style={{background:"#fef08a",padding:"1px 4px",borderRadius:4}}>repo</code>
+            Activa el permiso <code style={{background:"rgba(190,159,65,0.15)",padding:"1px 5px",borderRadius:4,color:GOLD}}>repo</code>
           </div>
         </>}
         {dest.type==="ssh"&&<>
-          {inp("Host / IP del servidor","url","192.168.1.1 o servidor.com","text",dest,sd,true)}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            {inp("Puerto","port","22","text",dest,sd)}
-            {inp("Usuario SSH","user","deploy","text",dest,sd)}
+          <BBSInput label="Host / IP del servidor" keyN="url" placeholder="192.168.1.1 o servidor.com" obj={dest} setter={sd} req err={err.url}/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <BBSInput label="Puerto" keyN="port" placeholder="22" obj={dest} setter={sd}/>
+            <BBSInput label="Usuario SSH" keyN="user" placeholder="deploy" obj={dest} setter={sd}/>
           </div>
-          {inp("Contraseña / Ruta llave SSH","token","~/.ssh/id_rsa","password",dest,sd,true)}
-          {inp("Directorio destino","path","/home/usuario/mcp-configs","text",dest,sd)}
+          <BBSInput label="Contraseña / Llave SSH" keyN="token" placeholder="~/.ssh/id_rsa" type="password" obj={dest} setter={sd} req err={err.token}/>
+          <BBSInput label="Directorio destino" keyN="path" placeholder="/home/usuario/mcp-configs" obj={dest} setter={sd}/>
         </>}
         {dest.type==="whm"&&<>
-          {inp("URL del servidor WHM","url","https://servidor.com:2087","url",dest,sd,true)}
-          {inp("WHM API Token","token","xxxxxxxxxxxxxxxx","password",dest,sd,true)}
+          <BBSInput label="URL del servidor WHM" keyN="url" placeholder="https://servidor.com:2087" type="url" obj={dest} setter={sd} req err={err.url}/>
+          <BBSInput label="WHM API Token" keyN="token" placeholder="xxxxxxxxxxxxxxxx" type="password" obj={dest} setter={sd} req err={err.token}/>
         </>}
-        {dest.type==="local"&&<div style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:14,padding:20,textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:10}}>💾</div>
-          <p style={{fontSize:13,color:"#475569",lineHeight:1.6}}>Se generarán los archivos en pantalla.<br/>Cópialos manualmente a tu configuración de Claude.</p>
-        </div>}
+        {dest.type==="local"&&(
+          <div style={{background:BG3,border:`1px solid ${BORDER}`,borderRadius:14,padding:24,textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:12}}>💾</div>
+            <p style={{fontSize:13,color:TEXT2,lineHeight:1.7}}>Los archivos se generarán en pantalla.<br/>Cópialos manualmente a tu configuración de Claude.</p>
+          </div>
+        )}
       </div>
     );
 
+    // PASO 2
     if(step===2) return(
       <div>
-        <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Selecciona los servicios</h2>
-        <p style={{color:"#64748b",fontSize:13,marginBottom:10}}>¿Qué MCPs necesita <strong>{client.name}</strong>?</p>
-        {err.s&&<div style={{background:"#fef2f2",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#dc2626",marginBottom:12}}>{err.s}</div>}
+        <h2 style={{fontSize:20,fontWeight:800,color:TEXT,marginBottom:4}}>Selecciona los servicios</h2>
+        <p style={{color:TEXT2,fontSize:13,marginBottom:12}}>¿Qué MCPs necesita <strong style={{color:GOLD}}>{client.name}</strong>?</p>
+        {err.s&&<div style={{background:"rgba(190,159,65,0.08)",border:`1px solid rgba(190,159,65,0.3)`,borderRadius:8,padding:"8px 12px",fontSize:12,color:GOLD,marginBottom:14}}>{err.s}</div>}
         {CATS.map(cat=>(
           <div key={cat} style={{marginBottom:18}}>
-            <h3 style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>{cat}</h3>
+            <h3 style={{fontSize:10,fontWeight:700,color:TEXT3,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8,paddingLeft:2}}>{cat}</h3>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
               {SERVICES.filter(s=>s.cat===cat).map(svc=>{
                 const on=sel.includes(svc.id);
-                return <button key={svc.id} onClick={()=>tog(svc.id)}
-                  style={{display:"flex",alignItems:"center",gap:8,padding:"10px 10px",borderRadius:11,
-                    border:`2px solid ${on?"#3b82f6":"#e2e8f0"}`,background:on?"#eff6ff":"#fff",cursor:"pointer",textAlign:"left",transition:"all .15s"}}>
+                return <button key={svc.id} onClick={()=>tog(svc.id)} className={`service-btn${on?" active":""}`}>
                   <span style={{fontSize:18,flexShrink:0}}>{svc.icon}</span>
                   <div style={{minWidth:0,flex:1}}>
-                    <div style={{fontSize:12,fontWeight:700,color:on?"#1d4ed8":"#0f172a",lineHeight:1.2}}>{svc.label}</div>
-                    <div style={{fontSize:10,color:"#94a3b8",lineHeight:1.2,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{svc.desc}</div>
+                    <div style={{fontSize:12,fontWeight:700,color:on?GOLD:TEXT,lineHeight:1.2}}>{svc.label}</div>
+                    <div style={{fontSize:10,color:TEXT3,lineHeight:1.2,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{svc.desc}</div>
                   </div>
-                  {on&&<span style={{color:"#3b82f6",fontSize:14,flexShrink:0}}>✓</span>}
+                  {on&&<span style={{color:GOLD,fontSize:14,flexShrink:0,marginLeft:"auto"}}>✓</span>}
                 </button>;
               })}
             </div>
           </div>
         ))}
-        {sel.length>0&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#1d4ed8"}}>
-          <strong>{sel.length} seleccionados:</strong> {sel.map(id=>SERVICES.find(s=>s.id===id)?.icon).join(" ")}
-        </div>}
+        {sel.length>0&&(
+          <div style={{background:"rgba(190,159,65,0.08)",border:`1px solid rgba(190,159,65,0.25)`,borderRadius:10,padding:"10px 14px",fontSize:12,color:GOLD}}>
+            <strong>{sel.length} seleccionados:</strong> {sel.map(id=>SERVICES.find(s=>s.id===id)?.icon).join(" ")}
+          </div>
+        )}
       </div>
     );
 
+    // PASO 3
     if(step===3){
       const asd=SERVICES.find(s=>s.id===active);
       return(
         <div>
-          <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Credenciales por servicio</h2>
-          <p style={{color:"#64748b",fontSize:13,marginBottom:12}}>Ingresa los datos de acceso para cada servicio.</p>
-          <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:14}}>
+          <h2 style={{fontSize:20,fontWeight:800,color:TEXT,marginBottom:4}}>Credenciales por servicio</h2>
+          <p style={{color:TEXT2,fontSize:13,marginBottom:14}}>Ingresa los datos de acceso para cada servicio.</p>
+          <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:16}}>
             {sel.map(id=>{
               const s=SERVICES.find(x=>x.id===id);
               const done=(FIELDS[id]||[]).filter(f=>f.t!=="sel").some(f=>creds[id]?.[f.k]);
               return <button key={id} onClick={()=>setActive(id)}
                 style={{display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:20,whiteSpace:"nowrap",
-                  border:`2px solid ${active===id?"#3b82f6":"#e2e8f0"}`,background:active===id?"#eff6ff":"#fff",
-                  cursor:"pointer",fontSize:12,fontWeight:600,color:active===id?"#1d4ed8":"#475569",flexShrink:0}}>
-                {s.icon} {s.label} {done&&<span style={{color:"#22c55e"}}>✓</span>}
+                  border:`1.5px solid ${active===id?GOLD:BORDER}`,
+                  background:active===id?"rgba(190,159,65,0.08)":BG3,
+                  cursor:"pointer",fontSize:12,fontWeight:600,
+                  color:active===id?GOLD:TEXT2,flexShrink:0}}>
+                {s.icon} {s.label}
+                {done&&<span style={{color:"#5cb85c",marginLeft:2}}>✓</span>}
               </button>;
             })}
           </div>
-          {asd&&<div style={{background:"#fff",border:"1.5px solid #e2e8f0",borderRadius:14,padding:16}}>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,paddingBottom:12,borderBottom:"1px solid #f1f5f9"}}>
-              <span style={{fontSize:28}}>{asd.icon}</span>
-              <div>
-                <div style={{fontWeight:700,fontSize:15,color:"#0f172a"}}>{asd.label}</div>
-                <div style={{fontSize:11,color:"#64748b"}}>{asd.desc}</div>
+          {asd&&(
+            <div className="bbs-card" style={{padding:16}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,paddingBottom:14,borderBottom:`1px solid ${BORDER}`}}>
+                <span style={{fontSize:28}}>{asd.icon}</span>
+                <div>
+                  <div style={{fontWeight:700,fontSize:15,color:TEXT}}>{asd.label}</div>
+                  <div style={{fontSize:11,color:TEXT2}}>{asd.desc}</div>
+                </div>
               </div>
+              {(FIELDS[active]||[]).map(f=>(
+                <FieldInput key={f.k} f={f} val={creds[active]?.[f.k]} onChange={v=>scr(active,f.k,v)}/>
+              ))}
             </div>
-            {(FIELDS[active]||[]).map(f=>(
-              <FieldInput key={f.k} f={f} val={creds[active]?.[f.k]} onChange={v=>scr(active,f.k,v)}/>
-            ))}
-          </div>}
-          <p style={{textAlign:"center",fontSize:11,color:"#94a3b8",marginTop:10}}>
-            Puedes dejar vacíos — quedarán como <code>CONFIGURAR_AQUI</code>
+          )}
+          <p style={{textAlign:"center",fontSize:11,color:TEXT3,marginTop:12}}>
+            Campos vacíos quedarán como <code style={{color:GOLD}}>CONFIGURAR_AQUI</code>
           </p>
         </div>
       );
     }
 
+    // PASO 4
     if(step===4) return(
       <div>
-        <h2 style={{fontSize:20,fontWeight:800,color:"#0f172a",marginBottom:4}}>Confirmar</h2>
-        <p style={{color:"#64748b",fontSize:13,marginBottom:20}}>Revisa antes de generar los archivos.</p>
+        <h2 style={{fontSize:20,fontWeight:800,color:TEXT,marginBottom:4}}>Confirmar</h2>
+        <p style={{color:TEXT2,fontSize:13,marginBottom:20}}>Revisa todo antes de generar los archivos.</p>
         {[
           {label:"Cliente",body:<>
-            <p style={{fontWeight:700,fontSize:14}}>{client.name}</p>
-            {client.contact&&<p style={{fontSize:12,color:"#64748b",marginTop:2}}>{client.contact}{client.email&&` — ${client.email}`}</p>}
-            <p style={{fontSize:11,color:"#94a3b8",marginTop:4}}>Slug: <code style={{fontWeight:700}}>{sl}</code></p>
+            <p style={{fontWeight:700,fontSize:14,color:TEXT}}>{client.name}</p>
+            {client.contact&&<p style={{fontSize:12,color:TEXT2,marginTop:2}}>{client.contact}{client.email&&` — ${client.email}`}</p>}
+            <p style={{fontSize:11,color:TEXT3,marginTop:4}}>Slug: <code style={{color:GOLD,fontWeight:700}}>{sl}</code></p>
           </>},
           {label:"Destino",body:<div style={{display:"flex",alignItems:"center",gap:10}}>
             <span style={{fontSize:22}}>{DEST.find(d=>d.id===dest.type)?.icon}</span>
             <div>
-              <span style={{fontWeight:700,fontSize:13}}>{DEST.find(d=>d.id===dest.type)?.label}</span>
-              {dest.url&&<p style={{fontSize:11,color:"#64748b",marginTop:2,wordBreak:"break-all"}}>{dest.url}</p>}
+              <span style={{fontWeight:700,fontSize:13,color:GOLD}}>{DEST.find(d=>d.id===dest.type)?.label}</span>
+              {dest.url&&<p style={{fontSize:11,color:TEXT2,marginTop:2,wordBreak:"break-all"}}>{dest.url}</p>}
             </div>
           </div>},
           {label:`Servicios (${sel.length})`,body:<div style={{display:"flex",flexWrap:"wrap",gap:6}}>
@@ -324,48 +543,55 @@ function App(){
               const s=SERVICES.find(x=>x.id===id);
               const done=(FIELDS[id]||[]).filter(f=>f.t!=="sel").some(f=>creds[id]?.[f.k]);
               return <span key={id} style={{padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,
-                background:done?"#dcfce7":"#fef9c3",color:done?"#15803d":"#854d0e"}}>
-                {s.icon} {s.label} {done?"✓":"⚠️"}
+                background:done?"rgba(92,184,92,0.12)":"rgba(190,159,65,0.1)",
+                color:done?"#5cb85c":GOLD,
+                border:`1px solid ${done?"rgba(92,184,92,0.3)":"rgba(190,159,65,0.3)"}`}}>
+                {s.icon} {s.label} {done?"✓":"·"}
               </span>;
             })}
           </div>},
         ].map(({label,body})=>(
-          <div key={label} style={{background:"#f8fafc",borderRadius:12,padding:"12px 16px",marginBottom:10}}>
-            <p style={{fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>{label}</p>
+          <div key={label} className="bbs-card" style={{padding:"14px 16px",marginBottom:10}}>
+            <p style={{fontSize:10,fontWeight:700,color:TEXT3,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>{label}</p>
             {body}
           </div>
         ))}
       </div>
     );
 
+    // PASO 5
     if(step===5) return(
       <div>
-        <div style={{textAlign:"center",marginBottom:20}}>
-          <div style={{fontSize:52,marginBottom:8}}>🎉</div>
-          <h2 style={{fontSize:22,fontWeight:800,color:"#0f172a"}}>¡Configuración lista!</h2>
-          <p style={{color:"#64748b",fontSize:13,marginTop:4}}>{client.name} — {sel.length} MCPs</p>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(190,159,65,0.12)",border:`2px solid ${GOLD}`,
+            display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,margin:"0 auto 14px"}}>🎉</div>
+          <h2 style={{fontSize:22,fontWeight:800,color:TEXT}}>¡Configuración lista!</h2>
+          <p style={{color:TEXT2,fontSize:13,marginTop:4}}><span style={{color:GOLD,fontWeight:700}}>{client.name}</span> — {sel.length} MCPs configurados</p>
         </div>
-        <div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:12,padding:"12px 16px",fontSize:12,color:"#1e40af",marginBottom:18,lineHeight:1.6}}>
-          <strong>Siguiente paso:</strong> Copia el bloque JSON y agrégalo a tu <code>claude_desktop_config.json</code>, luego reinicia Claude.
+        <div style={{background:"rgba(190,159,65,0.07)",border:`1px solid rgba(190,159,65,0.25)`,borderRadius:12,padding:"12px 16px",fontSize:12,color:"#c9ab5a",marginBottom:20,lineHeight:1.7}}>
+          <strong>Siguiente paso:</strong> Copia el JSON y pégalo en tu <code style={{color:GOLD}}>claude_desktop_config.json</code>, luego reinicia Claude.
         </div>
         {[{t:`.env — ${sl}`,c:envTxt},{t:"claude_desktop_config.json",c:cfgTxt}].map(({t,c})=>(
           <div key={t} style={{marginBottom:16}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#1e293b",padding:"8px 14px",borderRadius:"12px 12px 0 0"}}>
-              <code style={{color:"#94a3b8",fontSize:11}}>{t}</code>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+              background:"#0d0c0c",padding:"9px 14px",borderRadius:"12px 12px 0 0",border:`1px solid ${BORDER}`,borderBottom:"none"}}>
+              <code style={{color:TEXT2,fontSize:11}}>{t}</code>
               <CopyBtn text={c}/>
             </div>
-            <pre style={{background:"#0f172a",color:"#4ade80",fontSize:10,padding:"14px 16px",
-              borderRadius:"0 0 12px 12px",margin:0,overflow:"auto",maxHeight:180,whiteSpace:"pre-wrap",wordBreak:"break-all",fontFamily:"'SF Mono',Monaco,monospace"}}>
+            <pre style={{background:"#0a0909",color:"#be9f41",fontSize:10,padding:"14px 16px",
+              borderRadius:"0 0 12px 12px",margin:0,overflow:"auto",maxHeight:180,
+              border:`1px solid ${BORDER}`,borderTop:"none",
+              whiteSpace:"pre-wrap",wordBreak:"break-all"}}>
               {c}
             </pre>
           </div>
         ))}
-        <div style={{background:"#f8fafc",borderRadius:12,padding:"14px 16px",fontSize:12,lineHeight:1.8}}>
-          <strong style={{color:"#374151"}}>📋 Cómo instalar en Claude Desktop / Cowork:</strong>
-          <ol style={{color:"#64748b",paddingLeft:18,marginTop:6}}>
-            <li>Copia el bloque <code>claude_desktop_config.json</code></li>
-            <li><strong>Mac:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
-            <li><strong>Win:</strong> <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
+        <div className="bbs-card" style={{padding:"14px 16px",fontSize:12,lineHeight:1.9}}>
+          <p style={{fontWeight:700,color:TEXT2,marginBottom:8,fontSize:11,textTransform:"uppercase",letterSpacing:"0.08em"}}>📋 Instalar en Claude Desktop</p>
+          <ol style={{color:TEXT2,paddingLeft:18}}>
+            <li>Copia el bloque <code style={{color:GOLD}}>claude_desktop_config.json</code></li>
+            <li style={{color:TEXT3}}><strong style={{color:TEXT2}}>Mac:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+            <li style={{color:TEXT3}}><strong style={{color:TEXT2}}>Win:</strong> <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
             <li>Reinicia Claude Desktop o Cowork</li>
           </ol>
         </div>
@@ -374,50 +600,75 @@ function App(){
   };
 
   return(
-    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#eff6ff,#eef2ff)",padding:"24px 12px",display:"flex",flexDirection:"column",alignItems:"center"}}>
-      <div style={{display:"inline-flex",alignItems:"center",gap:10,background:"#fff",borderRadius:50,padding:"10px 22px",
-        boxShadow:"0 2px 12px rgba(0,0,0,.08)",border:"1px solid #e2e8f0",marginBottom:20}}>
-        <span style={{fontSize:22}}>🔌</span>
-        <span style={{fontWeight:800,fontSize:16,color:"#0f172a"}}>BBS MCP Installer</span>
-        <span style={{fontSize:11,color:"#94a3b8",borderLeft:"1px solid #e2e8f0",paddingLeft:12}}>Web · Desktop · Mobile</span>
+    <div style={{minHeight:"100vh",background:"transparent",display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 16px 60px"}}>
+
+      {/* Header */}
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
+        <img src="https://sistema.bbscomunicaciones.com/uploads/company/3d725895a929356834cd34be789253d9.png"
+          alt="BBS Comunicaciones" style={{height:48,marginBottom:14,filter:"drop-shadow(0 0 12px rgba(190,159,65,0.3))"}}
+          onError={e=>{e.target.style.display="none";}}/>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:15,fontWeight:800,color:TEXT}}>MCP Installer</span>
+          <span style={{width:4,height:4,borderRadius:"50%",background:GOLD,display:"inline-block"}}/>
+          <span style={{fontSize:11,color:TEXT3}}>Web · Desktop · Mobile</span>
+        </div>
       </div>
 
-      <div style={{display:"flex",gap:4,flexWrap:"wrap",justifyContent:"center",marginBottom:20,maxWidth:600}}>
-        {STEPS.map((s,i)=>(
-          <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,
-            background:step>i?"#dbeafe":step===i?"#eff6ff":"#f1f5f9",
-            color:step>i?"#1d4ed8":step===i?"#3b82f6":"#94a3b8",
-            border:`1.5px solid ${step>i?"#93c5fd":step===i?"#3b82f6":"#e2e8f0"}`}}>
-            <span style={{width:18,height:18,borderRadius:"50%",background:step>i?"#3b82f6":step===i?"#3b82f6":"#e2e8f0",
-              color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,flexShrink:0}}>
-              {step>i?"✓":i+1}
-            </span>
-            {s}
-          </div>
-        ))}
+      {/* Progress chips */}
+      <div style={{display:"flex",gap:4,flexWrap:"wrap",justifyContent:"center",marginBottom:24,maxWidth:600}}>
+        {STEPS.map((s,i)=>{
+          const done=step>i, cur=step===i;
+          return(
+            <div key={i} className="step-chip"
+              style={{background:done?"rgba(190,159,65,0.12)":cur?"rgba(190,159,65,0.07)":"transparent",
+                color:done?GOLD:cur?GOLD:TEXT3,
+                border:`1px solid ${done?GOLD:cur?"rgba(190,159,65,0.4)":BORDER}`}}>
+              <div className="step-dot"
+                style={{background:done||cur?GOLD:BORDER2,color:done||cur?BG:TEXT3}}>
+                {done?"✓":i+1}
+              </div>
+              {s}
+            </div>
+          );
+        })}
       </div>
 
-      <div style={{width:"100%",maxWidth:520,background:"#fff",borderRadius:22,boxShadow:"0 8px 32px rgba(0,0,0,.10)",border:"1px solid #f1f5f9",overflow:"hidden"}}>
+      {/* Main card */}
+      <div style={{width:"100%",maxWidth:520,background:BG2,borderRadius:20,
+        border:`1px solid ${BORDER}`,
+        boxShadow:"0 8px 40px rgba(0,0,0,.5)",overflow:"hidden"}}>
+
+        {/* Accent top bar */}
+        <div style={{height:3,background:`linear-gradient(90deg,${GOLD2},${GOLD},${GOLD2})`}}/>
+
+        {/* Body */}
         <div style={{padding:"24px 24px 8px",maxHeight:"62vh",overflowY:"auto"}}>
           {renderBody()}
         </div>
-        <div style={{padding:"16px 24px",borderTop:"1px solid #f1f5f9",display:"flex",justifyContent:"space-between",alignItems:"center",background:"#fafafa"}}>
+
+        {/* Footer */}
+        <div style={{padding:"16px 24px",borderTop:`1px solid ${BORDER}`,display:"flex",justifyContent:"space-between",alignItems:"center",background:BG}}>
           {step===5 ? <>
-            <button onClick={reset} style={{padding:"9px 18px",borderRadius:10,border:"1.5px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:13,color:"#475569",fontWeight:600}}>↺ Nuevo cliente</button>
-            <span style={{fontSize:11,color:"#94a3b8"}}>BBS Comunicaciones</span>
+            <button onClick={reset} className="bbs-btn-secondary" style={{padding:"9px 18px",borderRadius:10,fontSize:13}}>
+              ↺ Nuevo cliente
+            </button>
+            <span style={{fontSize:10,color:TEXT3}}>© BBS Comunicaciones</span>
           </> : <>
-            <button onClick={back} disabled={step===0}
-              style={{padding:"9px 18px",borderRadius:10,border:"1.5px solid #e2e8f0",background:"#fff",cursor:step===0?"not-allowed":"pointer",
-                fontSize:13,color:step===0?"#cbd5e1":"#475569",fontWeight:600,opacity:step===0?.5:1}}>
+            <button onClick={back} disabled={step===0} className="bbs-btn-secondary"
+              style={{padding:"9px 18px",borderRadius:10,fontSize:13,opacity:step===0?.3:1,cursor:step===0?"not-allowed":"pointer"}}>
               ← Atrás
             </button>
-            <button onClick={step===4?()=>setStep(5):next}
-              style={{padding:"10px 24px",borderRadius:10,border:"none",background:"#3b82f6",color:"#fff",cursor:"pointer",
-                fontSize:13,fontWeight:700,boxShadow:"0 2px 10px rgba(59,130,246,.4)"}}>
+            <button onClick={step===4?()=>setStep(5):next} className="bbs-btn-primary"
+              style={{padding:"10px 24px",borderRadius:10,fontSize:13}}>
               {step===4?"🚀 Generar configuración":step===3?"Revisar →":"Siguiente →"}
             </button>
           </>}
         </div>
+      </div>
+
+      {/* Footer logo */}
+      <div style={{marginTop:32,textAlign:"center"}}>
+        <p style={{fontSize:11,color:TEXT3}}>© 2026 BBS Comunicaciones — it@bbscomunicaciones.com</p>
       </div>
     </div>
   );
