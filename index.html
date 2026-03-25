@@ -9,96 +9,100 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
+    :root{
+      --bg:#111010;--bg2:#181614;--bg3:#1a1918;
+      --bdr:#272420;--bdr2:#2e2c28;
+      --txt:#e2e0dc;--txt2:#8a8784;--txt3:#5a5855;
+      --gold:#be9f41;--gold2:#a07a27;
+      --inp-bg:#1a1918;--inp-txt:#e2e0dc;--inp-ph:#5a5855;
+      --card-bg:#181614;--scroll-trk:#1a1918;
+      --svc-bg:#1a1918;--svc-hov:#1f1d1a;
+      --shadow:rgba(0,0,0,.5);
+      --pre-bg:#0a0909;--pre-hd:#0d0c0c;
+    }
+    body.light{
+      --bg:#f3f0ea;--bg2:#ffffff;--bg3:#ebe7df;
+      --bdr:#dbd5cc;--bdr2:#ccc6bc;
+      --txt:#1a1816;--txt2:#5a5550;--txt3:#9a9490;
+      --gold:#a07a27;--gold2:#7a5a18;
+      --inp-bg:#f3f0ea;--inp-txt:#1a1816;--inp-ph:#b0ada8;
+      --card-bg:#ffffff;--scroll-trk:#ebe7df;
+      --svc-bg:#f3f0ea;--svc-hov:#ebe7df;
+      --shadow:rgba(0,0,0,.12);
+      --pre-bg:#f9f7f4;--pre-hd:#f0ede8;
+    }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
       font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-      background:#111010;
+      background:var(--bg);
       min-height:100vh;
-      color:#e2e0dc;
+      color:var(--txt);
       overflow-x:hidden;
+      transition:background .25s,color .25s;
     }
     #particles-canvas{
-      position:fixed;
-      top:0;left:0;
+      position:fixed;top:0;left:0;
       width:100%;height:100%;
-      pointer-events:none;
-      z-index:0;
+      pointer-events:none;z-index:0;
     }
     #root{position:relative;z-index:1;}
     ::-webkit-scrollbar{width:5px;height:5px}
-    ::-webkit-scrollbar-track{background:#1a1918}
-    ::-webkit-scrollbar-thumb{background:#be9f41;border-radius:4px}
+    ::-webkit-scrollbar-track{background:var(--scroll-trk)}
+    ::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px}
     input,select,textarea,button{font-family:'Inter',sans-serif}
-    input::placeholder{color:#5a5855}
+    input::placeholder,textarea::placeholder{color:var(--inp-ph)}
     input:focus,select:focus,textarea:focus{
       outline:none;
-      border-color:#be9f41 !important;
+      border-color:var(--gold) !important;
       box-shadow:0 0 0 2px rgba(190,159,65,0.15);
     }
-    .gold{color:#be9f41}
+    .gold{color:var(--gold)}
     .bbs-btn-primary{
-      background:linear-gradient(135deg,#be9f41,#a07a27);
-      color:#111010;
-      border:none;
-      cursor:pointer;
-      font-weight:700;
-      transition:all .2s;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#111010;border:none;cursor:pointer;font-weight:700;transition:all .2s;
     }
     .bbs-btn-primary:hover{
-      background:linear-gradient(135deg,#d4b655,#be9f41);
-      box-shadow:0 4px 20px rgba(190,159,65,0.4);
-      transform:translateY(-1px);
+      background:linear-gradient(135deg,#d4b655,var(--gold));
+      box-shadow:0 4px 20px rgba(190,159,65,0.4);transform:translateY(-1px);
     }
     .bbs-btn-secondary{
-      background:transparent;
-      color:#be9f41;
-      border:1.5px solid #2e2c28;
-      cursor:pointer;
-      font-weight:600;
-      transition:all .2s;
+      background:transparent;color:var(--gold);
+      border:1.5px solid var(--bdr2);cursor:pointer;font-weight:600;transition:all .2s;
     }
-    .bbs-btn-secondary:hover{border-color:#be9f41;background:rgba(190,159,65,0.06);}
+    .bbs-btn-secondary:hover{border-color:var(--gold);background:rgba(190,159,65,0.06);}
     .bbs-input{
-      background:#1a1918;
-      border:1.5px solid #2e2c28;
-      color:#e2e0dc;
-      border-radius:10px;
-      padding:10px 14px;
-      font-size:13px;
-      width:100%;
-      transition:border-color .2s;
+      background:var(--inp-bg);border:1.5px solid var(--bdr2);
+      color:var(--inp-txt);border-radius:10px;padding:10px 14px;
+      font-size:13px;width:100%;transition:border-color .2s,background .25s,color .25s;
     }
-    .bbs-card{
-      background:#181614;
-      border:1px solid #272420;
-      border-radius:16px;
-    }
+    .bbs-card{background:var(--card-bg);border:1px solid var(--bdr);border-radius:16px;transition:background .25s,border .25s;}
     .service-btn{
-      background:#1a1918;
-      border:1.5px solid #272420;
-      border-radius:12px;
-      cursor:pointer;
-      text-align:left;
-      padding:10px;
-      transition:all .15s;
-      display:flex;
-      align-items:center;
-      gap:8px;
+      background:var(--svc-bg);border:1.5px solid var(--bdr);
+      border-radius:12px;cursor:pointer;text-align:left;padding:10px;
+      transition:all .15s;display:flex;align-items:center;gap:8px;
     }
-    .service-btn:hover{border-color:#be9f41;background:#1f1d1a;}
-    .service-btn.active{border-color:#be9f41;background:rgba(190,159,65,0.08);}
+    .service-btn:hover{border-color:var(--gold);background:var(--svc-hov);}
+    .service-btn.active{border-color:var(--gold);background:rgba(190,159,65,0.08);}
     .step-chip{
       display:flex;align-items:center;gap:6px;
-      padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;
-      transition:all .2s;
+      padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;transition:all .2s;
     }
     .step-dot{
       width:18px;height:18px;border-radius:50%;
       display:flex;align-items:center;justify-content:center;
       font-size:9px;font-weight:700;flex-shrink:0;
     }
+    .theme-toggle{
+      position:fixed;top:14px;right:16px;z-index:100;
+      background:var(--bg2);border:1px solid var(--bdr2);
+      border-radius:20px;padding:6px 12px;cursor:pointer;
+      font-size:13px;font-weight:700;color:var(--txt2);
+      transition:all .2s;box-shadow:0 2px 8px var(--shadow);
+    }
+    .theme-toggle:hover{border-color:var(--gold);color:var(--gold);}
     pre{font-family:'SF Mono',Monaco,'Courier New',monospace}
     code{font-family:'SF Mono',Monaco,'Courier New',monospace;font-size:12px}
+    body.light pre[style]{background:var(--pre-bg) !important;color:var(--gold) !important;}
   </style>
 </head>
 <body>
@@ -264,23 +268,24 @@ const STEPS = ["Cliente","Destino","Servicios","Credenciales","Confirmar","✓ L
 const CATS  = [...new Set(SERVICES.map(s=>s.cat))];
 const slug  = n => n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
 
-const GOLD = "#be9f41";
-const GOLD2 = "#a07a27";
-const BG = "#111010";
-const BG2 = "#181614";
-const BG3 = "#1a1918";
-const BORDER = "#272420";
-const BORDER2 = "#2e2c28";
-const TEXT = "#e2e0dc";
-const TEXT2 = "#8a8784";
-const TEXT3 = "#5a5855";
+const GOLD = "var(--gold)";
+const GOLD2 = "var(--gold2)";
+const BG = "var(--bg)";
+const BG2 = "var(--bg2)";
+const BG3 = "var(--bg3)";
+const BORDER = "var(--bdr)";
+const BORDER2 = "var(--bdr2)";
+const TEXT = "var(--txt)";
+const TEXT2 = "var(--txt2)";
+const TEXT3 = "var(--txt3)";
 
 // Guías de configuración por servicio
 const SERVICE_GUIDES = {
   whm: {
     type:"simple",
     label:"API Token de WHM",
-    link:"https://[TU_SERVIDOR]:2087/scripts2/manage_api_tokens",
+    link:"https://servidor.com:2087/scripts2/manage_api_tokens",
+    linkFromCred:{svc:"whm",field:"WHM_URL",template:"{VALUE}/scripts2/manage_api_tokens"},
     steps:[
       "Ingresa a WHM como root",
       "Ve a Development → Manage API Tokens",
@@ -291,7 +296,8 @@ const SERVICE_GUIDES = {
   whmcs: {
     type:"simple",
     label:"API Credentials de WHMCS",
-    link:"https://[TU_WHMCS]/admin/configgeneral.php",
+    link:"https://billing.tudominio.com/admin/configgeneral.php",
+    linkFromCred:{svc:"whmcs",field:"WHMCS_URL",template:"{VALUE}/admin/configgeneral.php"},
     steps:[
       "En WHMCS Admin → Setup → General Settings → Security",
       "Activa la API de WHMCS (si no está activa)",
@@ -303,7 +309,8 @@ const SERVICE_GUIDES = {
   ssh: {
     type:"simple",
     label:"Acceso SSH al servidor",
-    link:"https://[TU_SERVIDOR]:2083",
+    link:"https://servidor.com:2083",
+    linkFromCred:{svc:"ssh",field:"SSH_HOST",template:"https://{VALUE}:2083"},
     steps:[
       "Usa el usuario y contraseña del sistema operativo del servidor",
       "Para llave SSH: genera con ssh-keygen en tu máquina local",
@@ -496,7 +503,8 @@ const SERVICE_GUIDES = {
   perfex: {
     type:"simple",
     label:"Perfex CRM — API Token",
-    link:"https://[TU_PERFEX]/admin/authentication/api_token",
+    link:"https://crm.tudominio.com/admin/authentication/api_token",
+    linkFromCred:{svc:"perfex",field:"PERFEX_URL",template:"{VALUE}/admin/authentication/api_token"},
     steps:[
       "Ingresa al panel de Perfex como admin",
       "Ve a Configuración → Autenticación → API Token",
@@ -620,6 +628,9 @@ function App(){
   const [licencia,setLicencia]=useState(null);
   const [registrando,setRegistrando]=useState(false);
   const [platTab,setPlatTab]=useState("desktop");
+  const [lightMode,setLightMode]=useState(false);
+
+  React.useEffect(()=>{document.body.classList.toggle("light",lightMode);},[lightMode]);
 
   const sc=(k,v)=>setClient(c=>({...c,[k]:v}));
   const sd=(k,v)=>setDest(d=>({...d,[k]:v}));
@@ -841,12 +852,28 @@ function App(){
                     </p>
                   )}
                   <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}>
-                    <a href={SERVICE_GUIDES[active].link} target="_blank" rel="noopener noreferrer"
-                      style={{display:"inline-flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:8,
-                        background:"rgba(190,159,65,0.1)",border:`1px solid rgba(190,159,65,0.3)`,
-                        color:GOLD,fontSize:10,fontWeight:700,textDecoration:"none",transition:"all .15s"}}>
-                      🔗 Abrir panel de credenciales
-                    </a>
+                    {(()=>{
+                      const g=SERVICE_GUIDES[active];
+                      let href=g.link; let ready=true;
+                      if(g.linkFromCred){
+                        const v=creds[g.linkFromCred.svc]?.[g.linkFromCred.field];
+                        if(v&&v.trim()){href=g.linkFromCred.template.replace("{VALUE}",v.trim().replace(/\/$/,""));}
+                        else{ready=false;}
+                      }
+                      return ready
+                        ?<a href={href} target="_blank" rel="noopener noreferrer"
+                            style={{display:"inline-flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:8,
+                              background:"rgba(190,159,65,0.1)",border:`1px solid rgba(190,159,65,0.3)`,
+                              color:GOLD,fontSize:10,fontWeight:700,textDecoration:"none",transition:"all .15s"}}>
+                            🔗 Abrir panel de credenciales
+                          </a>
+                        :<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:8,
+                            background:"rgba(190,159,65,0.04)",border:`1px solid rgba(190,159,65,0.15)`,
+                            color:"rgba(190,159,65,0.35)",fontSize:10,fontWeight:700,cursor:"default"}}
+                            title="Ingresa la URL del servidor para habilitar este enlace">
+                            🔗 Ingresa la URL primero
+                          </span>;
+                    })()}
                     {SERVICE_GUIDES[active].link2&&(
                       <a href={SERVICE_GUIDES[active].link2} target="_blank" rel="noopener noreferrer"
                         style={{display:"inline-flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:8,
@@ -1043,7 +1070,10 @@ function App(){
     <div style={{minHeight:"100vh",background:"transparent",display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 16px 60px"}}>
 
       {/* Header */}
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28,position:"relative",width:"100%",maxWidth:560}}>
+        <button onClick={()=>setLightMode(m=>!m)} className="theme-toggle" title={lightMode?"Modo oscuro":"Modo claro"}>
+          {lightMode?"🌙":"☀️"}
+        </button>
         <img src="https://sistema.bbscomunicaciones.com/uploads/company/3d725895a929356834cd34be789253d9.png"
           alt="BBS Comunicaciones" style={{height:48,marginBottom:14,filter:"drop-shadow(0 0 12px rgba(190,159,65,0.3))"}}
           onError={e=>{e.target.style.display="none";}}/>
