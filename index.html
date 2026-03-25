@@ -297,6 +297,21 @@ function genConfig(client, creds, sels){
   return JSON.stringify({mcpServers:servers},null,2);
 }
 
+function genConfigWeb(licencia, client, sels){
+  const sl=slug(client.name);
+  const servers={};
+  sels.forEach(id=>{
+    servers[`${id}-${sl}`]={
+      url:`https://mcp.bbscomunicaciones.com/${id}-mcp`,
+      headers:{
+        "Authorization":`Bearer ${licencia||"TU-LICENCIA-BBS"}`,
+        "X-Client-Id":sl
+      }
+    };
+  });
+  return JSON.stringify({mcpServers:servers},null,2);
+}
+
 function CopyBtn({text}){
   const [ok,setOk]=useState(false);
   return <button onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(text);setOk(true);setTimeout(()=>setOk(false),1800);}}
@@ -374,6 +389,7 @@ function App(){
   const [err,setErr]=useState({});
   const [licencia,setLicencia]=useState(null);
   const [registrando,setRegistrando]=useState(false);
+  const [platTab,setPlatTab]=useState("desktop");
 
   const sc=(k,v)=>setClient(c=>({...c,[k]:v}));
   const sd=(k,v)=>setDest(d=>({...d,[k]:v}));
@@ -391,7 +407,7 @@ function App(){
   };
   const next=()=>{if(validate()){setStep(s=>s+1);if(step===2)setActive(sel[0]||null);}};
   const back=()=>setStep(s=>s-1);
-  const reset=()=>{setStep(0);setClient({name:"",contact:"",email:"",notes:""});setSel([]);setCreds({});setDest({type:"github",url:"",token:"",user:"",port:"22",path:""});setActive(null);setLicencia(null);};
+  const reset=()=>{setStep(0);setClient({name:"",contact:"",email:"",notes:""});setSel([]);setCreds({});setDest({type:"github",url:"",token:"",user:"",port:"22",path:""});setActive(null);setLicencia(null);setPlatTab("desktop");};
 
   const generar=async()=>{
     setRegistrando(true);
@@ -404,6 +420,7 @@ function App(){
   const sl=slug(client.name||"cliente");
   const envTxt=genEnv(client,creds,sel);
   const cfgTxt=genConfig(client,creds,sel);
+  const cfgWebTxt=genConfigWeb(licencia,client,sel);
 
   const Div = ()=><div style={{height:1,background:BORDER,margin:"20px 0"}}/>;
 
@@ -594,7 +611,7 @@ function App(){
     // PASO 5
     if(step===5) return(
       <div>
-        <div style={{textAlign:"center",marginBottom:24}}>
+        <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(190,159,65,0.12)",border:`2px solid ${GOLD}`,
             display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,margin:"0 auto 14px"}}>🎉</div>
           <h2 style={{fontSize:22,fontWeight:800,color:TEXT}}>¡Configuración lista!</h2>
@@ -602,7 +619,7 @@ function App(){
         </div>
         {licencia&&(
           <div style={{background:"rgba(190,159,65,0.07)",border:`1px solid rgba(190,159,65,0.35)`,borderRadius:12,
-            padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+            padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
             <div>
               <p style={{fontSize:10,fontWeight:700,color:TEXT3,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>🔑 Licencia BBS</p>
               <code style={{fontSize:15,fontWeight:800,color:GOLD,letterSpacing:"0.08em"}}>{licencia}</code>
@@ -610,33 +627,116 @@ function App(){
             <CopyBtn text={licencia}/>
           </div>
         )}
-        <div style={{background:"rgba(190,159,65,0.07)",border:`1px solid rgba(190,159,65,0.25)`,borderRadius:12,padding:"12px 16px",fontSize:12,color:"#c9ab5a",marginBottom:20,lineHeight:1.7}}>
-          <strong>Siguiente paso:</strong> Copia el JSON y pégalo en tu <code style={{color:GOLD}}>claude_desktop_config.json</code>, luego reinicia Claude.
+
+        {/* Tabs de plataforma */}
+        <div style={{display:"flex",gap:3,marginBottom:16,background:BG3,borderRadius:10,padding:3,border:`1px solid ${BORDER}`}}>
+          {[
+            {id:"desktop",icon:"🖥️",label:"Desktop"},
+            {id:"web",    icon:"🌐",label:"Web"},
+            {id:"mobile", icon:"📱",label:"Mobile"},
+          ].map(pt=>(
+            <button key={pt.id} onClick={()=>setPlatTab(pt.id)}
+              style={{flex:1,padding:"8px 4px",borderRadius:8,border:"none",cursor:"pointer",fontSize:11,fontWeight:700,
+                background:platTab===pt.id?"rgba(190,159,65,0.18)":"transparent",
+                color:platTab===pt.id?GOLD:TEXT3,transition:"all .15s"}}>
+              {pt.icon} {pt.label}
+            </button>
+          ))}
         </div>
-        {[{t:`.env — ${sl}`,c:envTxt},{t:"claude_desktop_config.json",c:cfgTxt}].map(({t,c})=>(
-          <div key={t} style={{marginBottom:16}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-              background:"#0d0c0c",padding:"9px 14px",borderRadius:"12px 12px 0 0",border:`1px solid ${BORDER}`,borderBottom:"none"}}>
-              <code style={{color:TEXT2,fontSize:11}}>{t}</code>
-              <CopyBtn text={c}/>
+
+        {/* Tab: Desktop / Cowork */}
+        {platTab==="desktop"&&(
+          <div>
+            <div style={{background:"rgba(190,159,65,0.07)",border:`1px solid rgba(190,159,65,0.25)`,borderRadius:10,padding:"10px 14px",fontSize:12,color:"#c9ab5a",marginBottom:14,lineHeight:1.7}}>
+              <strong>Claude Desktop / Cowork:</strong> Pega el JSON en <code style={{color:GOLD}}>claude_desktop_config.json</code> y reinicia.
             </div>
-            <pre style={{background:"#0a0909",color:"#be9f41",fontSize:10,padding:"14px 16px",
-              borderRadius:"0 0 12px 12px",margin:0,overflow:"auto",maxHeight:180,
-              border:`1px solid ${BORDER}`,borderTop:"none",
-              whiteSpace:"pre-wrap",wordBreak:"break-all"}}>
-              {c}
-            </pre>
+            {[{t:`.env — ${sl}`,c:envTxt},{t:"claude_desktop_config.json",c:cfgTxt}].map(({t,c})=>(
+              <div key={t} style={{marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+                  background:"#0d0c0c",padding:"9px 14px",borderRadius:"12px 12px 0 0",border:`1px solid ${BORDER}`,borderBottom:"none"}}>
+                  <code style={{color:TEXT2,fontSize:11}}>{t}</code>
+                  <CopyBtn text={c}/>
+                </div>
+                <pre style={{background:"#0a0909",color:"#be9f41",fontSize:10,padding:"14px 16px",
+                  borderRadius:"0 0 12px 12px",margin:0,overflow:"auto",maxHeight:160,
+                  border:`1px solid ${BORDER}`,borderTop:"none",whiteSpace:"pre-wrap",wordBreak:"break-all"}}>
+                  {c}
+                </pre>
+              </div>
+            ))}
+            <div className="bbs-card" style={{padding:"12px 16px",fontSize:12,lineHeight:1.9}}>
+              <p style={{fontWeight:700,color:TEXT2,marginBottom:6,fontSize:11,textTransform:"uppercase",letterSpacing:"0.08em"}}>📋 Instalar</p>
+              <ol style={{color:TEXT2,paddingLeft:18}}>
+                <li>Copia <code style={{color:GOLD}}>claude_desktop_config.json</code></li>
+                <li style={{color:TEXT3}}><strong style={{color:TEXT2}}>Mac:</strong> <code>~/Library/Application Support/Claude/</code></li>
+                <li style={{color:TEXT3}}><strong style={{color:TEXT2}}>Win:</strong> <code>%APPDATA%\Claude\</code></li>
+                <li>Reinicia Claude Desktop o Cowork</li>
+              </ol>
+            </div>
           </div>
-        ))}
-        <div className="bbs-card" style={{padding:"14px 16px",fontSize:12,lineHeight:1.9}}>
-          <p style={{fontWeight:700,color:TEXT2,marginBottom:8,fontSize:11,textTransform:"uppercase",letterSpacing:"0.08em"}}>📋 Instalar en Claude Desktop</p>
-          <ol style={{color:TEXT2,paddingLeft:18}}>
-            <li>Copia el bloque <code style={{color:GOLD}}>claude_desktop_config.json</code></li>
-            <li style={{color:TEXT3}}><strong style={{color:TEXT2}}>Mac:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
-            <li style={{color:TEXT3}}><strong style={{color:TEXT2}}>Win:</strong> <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
-            <li>Reinicia Claude Desktop o Cowork</li>
-          </ol>
-        </div>
+        )}
+
+        {/* Tab: Claude Web */}
+        {platTab==="web"&&(
+          <div>
+            <div style={{background:"rgba(190,159,65,0.07)",border:`1px solid rgba(190,159,65,0.25)`,borderRadius:10,padding:"10px 14px",fontSize:12,color:"#c9ab5a",marginBottom:14,lineHeight:1.7}}>
+              <strong>Claude Web (claude.ai):</strong> Agrega los MCPs remotos en Settings → Integrations.
+            </div>
+            <div style={{marginBottom:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+                background:"#0d0c0c",padding:"9px 14px",borderRadius:"12px 12px 0 0",border:`1px solid ${BORDER}`,borderBottom:"none"}}>
+                <code style={{color:TEXT2,fontSize:11}}>mcp-remote-config.json</code>
+                <CopyBtn text={cfgWebTxt}/>
+              </div>
+              <pre style={{background:"#0a0909",color:"#be9f41",fontSize:10,padding:"14px 16px",
+                borderRadius:"0 0 12px 12px",margin:0,overflow:"auto",maxHeight:180,
+                border:`1px solid ${BORDER}`,borderTop:"none",whiteSpace:"pre-wrap",wordBreak:"break-all"}}>
+                {cfgWebTxt}
+              </pre>
+            </div>
+            <div className="bbs-card" style={{padding:"12px 16px",fontSize:12,lineHeight:1.9}}>
+              <p style={{fontWeight:700,color:TEXT2,marginBottom:6,fontSize:11,textTransform:"uppercase",letterSpacing:"0.08em"}}>🌐 Activar en Claude Web</p>
+              <ol style={{color:TEXT2,paddingLeft:18}}>
+                <li>Abre <code style={{color:GOLD}}>claude.ai</code> → Perfil → <strong>Settings</strong></li>
+                <li>Sección <strong>Integrations</strong> → <strong>Add Integration</strong></li>
+                <li>Pega la URL de cada MCP</li>
+                <li style={{color:TEXT3}}>Formato: <code style={{color:GOLD,fontSize:10}}>https://mcp.bbscomunicaciones.com/[id]-mcp</code></li>
+                <li style={{color:TEXT3}}>Usa tu licencia como Bearer token</li>
+              </ol>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Mobile RC */}
+        {platTab==="mobile"&&(
+          <div>
+            <div style={{background:"rgba(190,159,65,0.07)",border:`1px solid rgba(190,159,65,0.25)`,borderRadius:10,padding:"10px 14px",fontSize:12,color:"#c9ab5a",marginBottom:14,lineHeight:1.7}}>
+              <strong>Claude Mobile (RC):</strong> Misma configuración remota que Claude Web. Requiere app RC.
+            </div>
+            <div style={{marginBottom:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+                background:"#0d0c0c",padding:"9px 14px",borderRadius:"12px 12px 0 0",border:`1px solid ${BORDER}`,borderBottom:"none"}}>
+                <code style={{color:TEXT2,fontSize:11}}>mcp-remote-config.json</code>
+                <CopyBtn text={cfgWebTxt}/>
+              </div>
+              <pre style={{background:"#0a0909",color:"#be9f41",fontSize:10,padding:"14px 16px",
+                borderRadius:"0 0 12px 12px",margin:0,overflow:"auto",maxHeight:180,
+                border:`1px solid ${BORDER}`,borderTop:"none",whiteSpace:"pre-wrap",wordBreak:"break-all"}}>
+                {cfgWebTxt}
+              </pre>
+            </div>
+            <div className="bbs-card" style={{padding:"12px 16px",fontSize:12,lineHeight:1.9}}>
+              <p style={{fontWeight:700,color:TEXT2,marginBottom:6,fontSize:11,textTransform:"uppercase",letterSpacing:"0.08em"}}>📱 Activar en Claude RC</p>
+              <ol style={{color:TEXT2,paddingLeft:18}}>
+                <li>Abre <strong>Claude RC</strong> en tu dispositivo iOS/Android</li>
+                <li>Ve a <strong>Perfil → Settings → Integrations</strong></li>
+                <li>Agrega cada MCP con su URL remota</li>
+                <li style={{color:TEXT3}}>Licencia: <code style={{color:GOLD,fontSize:10}}>{licencia||"TU-LICENCIA-BBS"}</code></li>
+                <li style={{color:TEXT3}}>URL base: <code style={{color:GOLD,fontSize:10}}>https://mcp.bbscomunicaciones.com/</code></li>
+              </ol>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
